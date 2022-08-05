@@ -23,7 +23,7 @@ export interface MarketMakerParams {
   tonic: Tonic;
   market: Market;
   config: any;
-  coinGeckoName: string;
+  coinName: string;
   baseQuantity: number;
   orderDelayMs: number;
   network: 'mainnet' | 'testnet';
@@ -53,13 +53,13 @@ async function makeMarket(params: MarketMakerParams) {
     tonic,
     market,
     config,
-    coinGeckoName,  // tokenId
+    coinName,
     baseQuantity, 
     orderDelayMs,
     network
   } = params;
   while (true) {
-    const indexPrice = await getPrice(coinGeckoName);
+    const indexPrice = await getPrice(coinName);
 
     const batch = market.createBatchAction();
     batch.cancelAllOrders();
@@ -118,7 +118,7 @@ async function main() {
   const account = await near.account(args.nearAccountId);
   const tonic = new Tonic(account, args.tonicContractId);
   const market = await tonic.getMarket(args.marketId);
-  await makeMarket({ tonic, market, config, coinGeckoName: args.assetName, ...args });
+  await makeMarket({ tonic, market, config, coinName: args.assetName, ...args });
 }
 
 main();
