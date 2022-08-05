@@ -1,0 +1,18 @@
+{
+    "bids": [
+        {"quantity": 0.1, "spread": 1.12},
+        {"quantity": 0.1, "spread": 1.10},
+        {"quantity": 0.1, "spread": 1.08},
+        {"quantity": 0.2, "spread": 1.06},
+        {"quantity": 0.1, "spread": 1.04},
+        {"quantity": 0.1, "spread": 1.02}
+    ],
+    "asks": [
+        {"quantity": 0.1, "spread": 0.98},
+        {"quantity": 0.1, "spread": 0.96},
+        {"quantity": 0.1, "spread": 0.94},
+        {"quantity": 0.2, "spread": 0.92},
+        {"quantity": 0.1, "spread": 0.9},
+        {"quantity": 0.1, "spread": 0.88}
+    ]
+}
