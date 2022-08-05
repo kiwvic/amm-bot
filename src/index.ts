@@ -27,18 +27,17 @@ export interface MarketMakerParams {
 }
 
 const client = axios.create({
-  baseURL: 'https://api.coingecko.com/api/v3/',
+  baseURL: 'https://indexer.ref.finance/',
 });
 
-export const getPrice = async (asset: string) => {
+export const getPrice = async (tokenId: string) => {
   return client
-    .get('simple/price', {
+    .get('get-token-price', {
       params: {
-        ids: asset,
-        vs_currencies: 'usd',
+        token_id: tokenId
       },
     })
-    .then((res) => res.data[asset]['usd']) as unknown as number;
+    .then((res) => res.data[tokenId]['usd']) as unknown as number;
 };
 
 
@@ -46,9 +45,8 @@ async function makeMarket(params: MarketMakerParams) {
   const {
     tonic,
     market,
-    coinGeckoName,
-    baseQuantity,
-    spreadBps,
+    coinGeckoName,  // tokenId
+    baseQuantity, 
     orderDelayMs,
     network
   } = params;
@@ -57,7 +55,9 @@ async function makeMarket(params: MarketMakerParams) {
 
     const batch = market.createBatchAction();
     batch.cancelAllOrders();
-    const delta = (spreadBps / 2) / 10000;
+
+    // TODO
+    const delta = 10000;
     const bid = parseFloat((indexPrice * (1 - delta)).toFixed(market.quoteDecimals));
     const ask = parseFloat((indexPrice * (1 + delta)).toFixed(market.quoteDecimals));
     batch.newOrder({
@@ -72,6 +72,7 @@ async function makeMarket(params: MarketMakerParams) {
       limitPrice: ask,
       orderType: 'Limit',
     });
+
     console.log(`Making market at mid: ${indexPrice} buying at ${bid} selling at ${ask}`);
 
     try {
