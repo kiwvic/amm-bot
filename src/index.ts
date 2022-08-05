@@ -4,6 +4,10 @@ import { Near } from 'near-api-js';
 import { getExplorerUrl, getGasUsage, getKeystore } from './util';
 import { parse } from 'ts-command-line-args';
 import axios from 'axios';
+import * as dotenv from 'dotenv';
+
+dotenv.config();
+const CONFIG_URL = process.env.CONFIG_URL
 
 export interface ProgramOptions {
   marketId: string;
@@ -18,6 +22,7 @@ export interface ProgramOptions {
 export interface MarketMakerParams {
   tonic: Tonic;
   market: Market;
+  config: any;
   coinGeckoName: string;
   baseQuantity: number;
   orderDelayMs: number;
@@ -38,11 +43,16 @@ export const getPrice = async (tokenId: string) => {
     .then((res) => res.data[tokenId]['usd']) as unknown as number;
 };
 
+export const getConfig = async () => {
+  return (await axios.get(CONFIG_URL!)).data;
+}
+
 
 async function makeMarket(params: MarketMakerParams) {
   const {
     tonic,
     market,
+    config,
     coinGeckoName,  // tokenId
     baseQuantity, 
     orderDelayMs,
@@ -97,12 +107,13 @@ async function main() {
     network: String,
     orderDelayMs: Number,
   });
+  const config = await getConfig();
   const keyStore = await getKeystore();
   const near = new Near({ ...getNearConfig(args.network), keyStore });
   const account = await near.account(args.nearAccountId);
   const tonic = new Tonic(account, args.tonicContractId);
   const market = await tonic.getMarket(args.marketId);
-  await makeMarket({ tonic, market, coinGeckoName: args.assetName, ...args });
+  await makeMarket({ tonic, market, config, coinGeckoName: args.assetName, ...args });
 }
 
 main();
