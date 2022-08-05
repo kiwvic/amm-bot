@@ -13,7 +13,6 @@ export interface ProgramOptions {
   baseQuantity: number;
   network: 'mainnet' | 'testnet';
   orderDelayMs: number;
-  spreadBps: number;
 }
 
 export interface MarketMakerParams {
@@ -21,7 +20,6 @@ export interface MarketMakerParams {
   market: Market;
   coinGeckoName: string;
   baseQuantity: number;
-  spreadBps: number;
   orderDelayMs: number;
   network: 'mainnet' | 'testnet';
 }
@@ -97,7 +95,6 @@ async function main() {
     baseQuantity: Number,
     // @ts-ignore
     network: String,
-    spreadBps: Number,
     orderDelayMs: Number,
   });
   const keyStore = await getKeystore();
