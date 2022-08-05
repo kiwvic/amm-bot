@@ -1,7 +1,7 @@
 import { Market, Tonic } from '@tonic-foundation/tonic';
 import { getNearConfig } from '@tonic-foundation/config';
 import { Near } from 'near-api-js';
-import { getExplorerUrl, getGasUsage, getKeystore } from './util';
+import { getExplorerUrl, getGasUsage, getKeystore, sleep } from './util';
 import { parse } from 'ts-command-line-args';
 import axios from 'axios';
 import * as dotenv from 'dotenv';
@@ -97,7 +97,7 @@ async function makeMarket(params: MarketMakerParams) {
       console.log('Order failed', e);
     }
     console.log(`Waiting ${orderDelayMs}ms`);
-    await new Promise((resolve) => setTimeout(resolve, orderDelayMs));
+    await sleep(orderDelayMs);
   }
 }
 
