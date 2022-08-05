@@ -64,24 +64,29 @@ async function makeMarket(params: MarketMakerParams) {
     const batch = market.createBatchAction();
     batch.cancelAllOrders();
 
-    // TODO
-    const delta = 10000;
-    const bid = parseFloat((indexPrice * (1 - delta)).toFixed(market.quoteDecimals));
-    const ask = parseFloat((indexPrice * (1 + delta)).toFixed(market.quoteDecimals));
-    batch.newOrder({
-      quantity: baseQuantity,
-      side: 'Buy',
-      limitPrice: bid,
-      orderType: 'Limit',
-    });
-    batch.newOrder({
-      quantity: baseQuantity,
-      side: 'Sell',
-      limitPrice: ask,
-      orderType: 'Limit',
-    });
+    for (const bid_ of config.bids) {
+      const bid = parseFloat((indexPrice * (1 - bid_.spread)).toFixed(market.quoteDecimals));
+      const quantity = baseQuantity * bid_.quantity;
 
-    console.log(`Making market at mid: ${indexPrice} buying at ${bid} selling at ${ask}`);
+      batch.newOrder({
+        quantity: quantity,
+        side: 'Buy',
+        limitPrice: bid,
+        orderType: 'Limit',
+      });
+    }
+
+    for (const ask_ of config.asks) {
+      const ask = parseFloat((indexPrice * (1 + ask_.spread)).toFixed(market.quoteDecimals));
+      const quantity = baseQuantity * ask_.quantity;
+
+      batch.newOrder({
+        quantity: quantity,
+        side: 'Sell',
+        limitPrice: ask,
+        orderType: 'Limit',
+      });
+    }
 
     try {
       console.log('Sending transaction...');
