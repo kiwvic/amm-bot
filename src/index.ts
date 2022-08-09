@@ -64,7 +64,7 @@ const quantityChanged = (currentOrders: any, configOrders: any) => {
   return true;
 }
 
-const isMakeMarketNeeded = (currentOrders: any, configOrders: any) => {
+const isMakeMarketNeeded = (currentOrders: any, configOrders: any, indexPrice: any) => {
   return amountOfOrdersChanged(currentOrders, configOrders) ||
          spreadChanged(currentOrders, configOrders) ||
          quantityChanged(currentOrders, configOrders) 
@@ -83,10 +83,9 @@ async function makeMarket(params: MarketMakerParams) {
   while (true) {    
     const currentOrders = await getCurrentOrders(tonic, market.id);
     const configOrders = getConfigOrders(config);
+    const indexPrice = await getPrice(coinName);
 
-    if (isMakeMarketNeeded(currentOrders, configOrders)) {
-      const indexPrice = await getPrice(coinName);
-
+    if (isMakeMarketNeeded(currentOrders, configOrders, indexPrice)) {
       const batch = market.createBatchAction();
       batch.cancelAllOrders();
 
