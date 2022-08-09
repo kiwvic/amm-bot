@@ -50,3 +50,7 @@ export const getCurrentOrders = async (tonic: Tonic, marketId: string) => {
 
   return { sell, buy }
 }
+
+export const getConfigOrders = (config: any) => {
+  return {};
+}

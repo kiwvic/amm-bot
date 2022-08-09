@@ -1,7 +1,7 @@
 import { Market, Tonic } from '@tonic-foundation/tonic';
 import { getNearConfig } from '@tonic-foundation/config';
 import { Near } from 'near-api-js';
-import { getExplorerUrl, getGasUsage, getKeystore, sleep, getCurrentOrders } from './util';
+import { getExplorerUrl, getGasUsage, getKeystore, sleep, getCurrentOrders, getConfigOrders } from './util';
 import { parse } from 'ts-command-line-args';
 import axios from 'axios';
 import * as dotenv from 'dotenv';
@@ -52,6 +52,17 @@ export const getConfig = async () => {
   return (await axios.get(CONFIG_URL!)).data;
 }
 
+const amountOfOrdersChanged = (currentOrders: any, configOrders: any) => {
+  return currentOrders.length !== configOrders.length;
+}
+
+const spreadChanged = () => {
+  return true;
+}
+
+const quantityChanged = () => {
+  return true;
+}
 
 async function makeMarket(params: MarketMakerParams) {
   const {
@@ -63,13 +74,17 @@ async function makeMarket(params: MarketMakerParams) {
     orderDelayMs,
     network
   } = params;
-  while (true) {
-    // TODO get current percents on market, compare them with config
-    // TODO raise error if length arent equal
-    
-    const {bids, asks} = await tonic.getOrderbook(market.id);
+  while (true) {    
+    const currentOrders = await getCurrentOrders(tonic, market.id);
+    const configOrders = getConfigOrders(config);
 
-    // TODO all checks to dedicated file
+    const isMakeMarketNeeded = amountOfOrdersChanged() || spreadChanged() || quantityChanged();
+
+    if (!isMakeMarketNeeded) {
+      return;
+    }
+    /*
+    const {bids, asks} = await tonic.getOrderbook(market.id);
 
     for (let i = 0; i < bids.length; i++) {
       const bidsQuantityDelta = Math.abs(bids[i][1] - config.bids[i].quantity);
@@ -85,6 +100,7 @@ async function makeMarket(params: MarketMakerParams) {
         return
       }
     }
+    */
 
     const indexPrice = await getPrice(coinName);
 
@@ -146,35 +162,7 @@ async function main() {
   const tonic = new Tonic(account, args.tonicContractId);
   const market = await tonic.getMarket(args.marketId);
 
-  const { buy, sell } = await getCurrentOrders(tonic, market.id);
-  console.log(buy);
-  console.log(sell);
-
-  // await makeMarket({ tonic, market, config, coinName: args.assetName, ...args });
-
-  // const {bids, asks} = await tonic.getOrderbook(market.id);
-
-    // for (let i = 0; i < bids.length; i++) {
-    //   const bidsSpreadDelta = Math.abs(bids[i][0] - config.bids[i].spread * );
-
-      // const bidsQuantityDelta = Math.abs(bids[i][1] - config.bids[i].quantity);
-      // const asksQuantityDelta = Math.abs(asks[i][1] - config.asks[i].quantity);
-
-      // const bidsSpreadDelta = Math.abs(bids[i][0] - config.bids[i].spread);
-      // const asksSpreadDelta = Math.abs(asks[i][0] - config.asks[i].spread);
-
-      // console.log(`bidsQuantityDelta: ${bidsQuantityDelta}, asksQuantityDelta: ${asksQuantityDelta}`);
-      // console.log(`bidsSpreadDelta: ${bidsSpreadDelta}, asksSpreadDelta: ${asksSpreadDelta}`);
-
-      // if (
-      //   (bidsSpreadDelta < config.spreadDelta && asksSpreadDelta < config.spreadDelta) ||
-      //   (bidsQuantityDelta < config.quantityDelta && asksQuantityDelta < config.quantityDelta)
-      //   ) {
-      //   console.log();
-      // }
-
-      // console.log();
-    // }
+  await makeMarket({ tonic, market, config, coinName: args.assetName, ...args });
 }
 
 main();
