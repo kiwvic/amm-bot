@@ -56,12 +56,18 @@ const amountOfOrdersChanged = (currentOrders: any, configOrders: any) => {
   return currentOrders.length !== configOrders.length;
 }
 
-const spreadChanged = () => {
+const spreadChanged = (currentOrders: any, configOrders: any) => {
   return true;
 }
 
-const quantityChanged = () => {
+const quantityChanged = (currentOrders: any, configOrders: any) => {
   return true;
+}
+
+const isMakeMarketNeeded = (currentOrders: any, configOrders: any) => {
+  return amountOfOrdersChanged(currentOrders, configOrders) ||
+         spreadChanged(currentOrders, configOrders) ||
+         quantityChanged(currentOrders, configOrders) 
 }
 
 async function makeMarket(params: MarketMakerParams) {
@@ -78,11 +84,48 @@ async function makeMarket(params: MarketMakerParams) {
     const currentOrders = await getCurrentOrders(tonic, market.id);
     const configOrders = getConfigOrders(config);
 
-    const isMakeMarketNeeded = amountOfOrdersChanged() || spreadChanged() || quantityChanged();
+    if (isMakeMarketNeeded(currentOrders, configOrders)) {
+      const indexPrice = await getPrice(coinName);
 
-    if (!isMakeMarketNeeded) {
-      return;
+      const batch = market.createBatchAction();
+      batch.cancelAllOrders();
+
+      for (const bid_ of config.bids) {
+        const bid = parseFloat((indexPrice * (1 - bid_.spread)).toFixed(market.quoteDecimals));
+        const quantity = baseQuantity * bid_.quantity;
+
+        batch.newOrder({
+          quantity: quantity,
+          side: 'Buy',
+          limitPrice: bid,
+          orderType: 'Limit',
+        });
+      }
+
+      for (const ask_ of config.asks) {
+        const ask = parseFloat((indexPrice * (1 + ask_.spread)).toFixed(market.quoteDecimals));
+        const quantity = baseQuantity * ask_.quantity;
+
+        batch.newOrder({
+          quantity: quantity,
+          side: 'Sell',
+          limitPrice: ask,
+          orderType: 'Limit',
+        });
+      }
+
+      try {
+        console.log('Sending transaction...');
+        const { executionOutcome: tx, response: _ } = await tonic.executeBatch(batch);
+        console.log('Transaction', getExplorerUrl(network, 'transaction', tx.transaction_outcome.id));
+        console.log(`Gas usage: ${getGasUsage(tx)}`);
+      } catch (e) {
+        console.log('Order failed', e);
+      }
     }
+
+    console.log(`Waiting ${orderDelayMs}ms`);
+    await sleep(orderDelayMs);
     /*
     const {bids, asks} = await tonic.getOrderbook(market.id);
 
@@ -101,46 +144,6 @@ async function makeMarket(params: MarketMakerParams) {
       }
     }
     */
-
-    const indexPrice = await getPrice(coinName);
-
-    const batch = market.createBatchAction();
-    batch.cancelAllOrders();
-
-    for (const bid_ of config.bids) {
-      const bid = parseFloat((indexPrice * (1 - bid_.spread)).toFixed(market.quoteDecimals));
-      const quantity = baseQuantity * bid_.quantity;
-
-      batch.newOrder({
-        quantity: quantity,
-        side: 'Buy',
-        limitPrice: bid,
-        orderType: 'Limit',
-      });
-    }
-
-    for (const ask_ of config.asks) {
-      const ask = parseFloat((indexPrice * (1 + ask_.spread)).toFixed(market.quoteDecimals));
-      const quantity = baseQuantity * ask_.quantity;
-
-      batch.newOrder({
-        quantity: quantity,
-        side: 'Sell',
-        limitPrice: ask,
-        orderType: 'Limit',
-      });
-    }
-
-    try {
-      console.log('Sending transaction...');
-      const { executionOutcome: tx, response: _ } = await tonic.executeBatch(batch);
-      console.log('Transaction', getExplorerUrl(network, 'transaction', tx.transaction_outcome.id));
-      console.log(`Gas usage: ${getGasUsage(tx)}`);
-    } catch (e) {
-      console.log('Order failed', e);
-    }
-    console.log(`Waiting ${orderDelayMs}ms`);
-    await sleep(orderDelayMs);
   }
 }
 
