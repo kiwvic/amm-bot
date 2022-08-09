@@ -2,6 +2,7 @@ import { getExplorerBaseUrl } from '@tonic-foundation/config';
 import { keyStores } from 'near-api-js';
 import { FinalExecutionOutcome } from 'near-api-js/lib/providers';
 import { homedir } from 'os';
+import { Tonic } from '@tonic-foundation/tonic';
 
 export const getGasUsage = (o: FinalExecutionOutcome) => {
   const receiptGas = o.transaction_outcome.outcome.gas_burnt;
@@ -30,4 +31,21 @@ export function getExplorerUrl(network: 'mainnet' | 'testnet', type: 'account' |
     return `${baseUrl}/txns/${id}`;
   }
   throw new Error('Invalid resource type');
+}
+
+export const getCurrentOrders = async (tonic: Tonic, marketId: string) => {
+  let sell = Array();
+  let buy = Array();
+
+  const openOrders = await tonic.getOpenOrders(marketId);  
+
+  for (let order of openOrders) {
+    if (order.side === "Sell") {
+      sell.push({"quantity": order.remainingQuantity, "price": order.limitPrice});
+    } else {
+      buy.push({"quantity": order.remainingQuantity, "price": order.limitPrice});
+    }
+  }
+
+  return { sell, buy }
 }

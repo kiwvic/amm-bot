@@ -1,13 +1,18 @@
 import { Market, Tonic } from '@tonic-foundation/tonic';
 import { getNearConfig } from '@tonic-foundation/config';
 import { Near } from 'near-api-js';
-import { getExplorerUrl, getGasUsage, getKeystore, sleep } from './util';
+import { getExplorerUrl, getGasUsage, getKeystore, sleep, getCurrentOrders } from './util';
 import { parse } from 'ts-command-line-args';
 import axios from 'axios';
 import * as dotenv from 'dotenv';
 
 dotenv.config();
-const CONFIG_URL = process.env.CONFIG_URL
+const CONFIG_URL = process.env.CONFIG_URL;
+const TOKEN_DECIMALS = 18;
+const SPREAD_DECIMALS = 3;
+
+const QUANTITY_FACTOR = Math.pow(10, TOKEN_DECIMALS - 1);
+const SPREAD_FACTOR = Math.pow(10, SPREAD_DECIMALS - 1);
 
 export interface ProgramOptions {
   marketId: string;
@@ -67,11 +72,11 @@ async function makeMarket(params: MarketMakerParams) {
     // TODO all checks to dedicated file
 
     for (let i = 0; i < bids.length; i++) {
-      const bidsQuantityDelta = Math.abs(bids[i][0] - config.bids[i].quantity);
-      const asksQuantityDelta = Math.abs(asks[i][0] - config.asks[i].quantity);
+      const bidsQuantityDelta = Math.abs(bids[i][1] - config.bids[i].quantity);
+      const asksQuantityDelta = Math.abs(asks[i][1] - config.asks[i].quantity);
 
-      const bidsSpreadDelta = Math.abs(bids[i][1] - config.bids[i].spread);
-      const asksSpreadDelta = Math.abs(asks[i][1] - config.asks[i].spread);
+      const bidsSpreadDelta = Math.abs(bids[i][0] - config.bids[i].spread);
+      const asksSpreadDelta = Math.abs(asks[i][0] - config.asks[i].spread);
 
       if (
         (bidsSpreadDelta < config.spreadDelta && asksSpreadDelta < config.spreadDelta) ||
@@ -141,7 +146,33 @@ async function main() {
   const tonic = new Tonic(account, args.tonicContractId);
   const market = await tonic.getMarket(args.marketId);
 
-  await makeMarket({ tonic, market, config, coinName: args.assetName, ...args });
+  const { buy, sell } = await getCurrentOrders(tonic, market.id);
+
+  // await makeMarket({ tonic, market, config, coinName: args.assetName, ...args });
+
+  // const {bids, asks} = await tonic.getOrderbook(market.id);
+
+    // for (let i = 0; i < bids.length; i++) {
+    //   const bidsSpreadDelta = Math.abs(bids[i][0] - config.bids[i].spread * );
+
+      // const bidsQuantityDelta = Math.abs(bids[i][1] - config.bids[i].quantity);
+      // const asksQuantityDelta = Math.abs(asks[i][1] - config.asks[i].quantity);
+
+      // const bidsSpreadDelta = Math.abs(bids[i][0] - config.bids[i].spread);
+      // const asksSpreadDelta = Math.abs(asks[i][0] - config.asks[i].spread);
+
+      // console.log(`bidsQuantityDelta: ${bidsQuantityDelta}, asksQuantityDelta: ${asksQuantityDelta}`);
+      // console.log(`bidsSpreadDelta: ${bidsSpreadDelta}, asksSpreadDelta: ${asksSpreadDelta}`);
+
+      // if (
+      //   (bidsSpreadDelta < config.spreadDelta && asksSpreadDelta < config.spreadDelta) ||
+      //   (bidsQuantityDelta < config.quantityDelta && asksQuantityDelta < config.quantityDelta)
+      //   ) {
+      //   console.log();
+      // }
+
+      // console.log();
+    // }
 }
 
 main();
