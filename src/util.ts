@@ -42,7 +42,8 @@ export const getCurrentOrders = async (tonic: Tonic, marketId: string) => {
   for (let order of openOrders) {
     if (order.side === "Sell") {
       sell.push({"quantity": order.remainingQuantity, "price": order.limitPrice});
-    } else {
+    } 
+    else if (order.side === "Buy") {
       buy.push({"quantity": order.remainingQuantity, "price": order.limitPrice});
     }
   }

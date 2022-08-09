@@ -147,6 +147,8 @@ async function main() {
   const market = await tonic.getMarket(args.marketId);
 
   const { buy, sell } = await getCurrentOrders(tonic, market.id);
+  console.log(buy);
+  console.log(sell);
 
   // await makeMarket({ tonic, market, config, coinName: args.assetName, ...args });
 
