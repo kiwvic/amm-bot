@@ -62,16 +62,20 @@ async function makeMarket(params: MarketMakerParams) {
     // TODO get current percents on market, compare them with config
     // TODO raise error if length arent equal
     
-    const mockBids = new Array(6);
-    const mockAsks = new Array(6);
+    const {bids, asks} = await tonic.getOrderbook(market.id);
 
-    for (let i = 0; i < mockBids.length; i++) {
-      const bidsSpreadDelta = Math.abs(mockBids[i].spread - config.bids[i].spread);
-      const asksSpreadDelta = Math.abs(mockAsks[i].spread - config.asks[i].spread);
+    // TODO all checks to dedicated file
+
+    for (let i = 0; i < bids.length; i++) {
+      const bidsQuantityDelta = Math.abs(bids[i][0] - config.bids[i].quantity);
+      const asksQuantityDelta = Math.abs(asks[i][1] - config.asks[i].quantity);
+
+      const bidsSpreadDelta = Math.abs(bids[i][1] - config.bids[i].spread);
+      const asksSpreadDelta = Math.abs(asks[i][1] - config.asks[i].spread);
 
       if (
-        bidsSpreadDelta < config.spreadDelta && 
-        asksSpreadDelta < config.quantityDelta
+        (bidsSpreadDelta < config.spreadDelta && asksSpreadDelta < config.quantityDelta) ||
+        (bidsQuantityDelta < config.quantityDelta && asksQuantityDelta < config.quantityDelta)
         ) {
         return
       }
