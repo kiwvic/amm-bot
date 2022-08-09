@@ -74,7 +74,7 @@ async function makeMarket(params: MarketMakerParams) {
       const asksSpreadDelta = Math.abs(asks[i][1] - config.asks[i].spread);
 
       if (
-        (bidsSpreadDelta < config.spreadDelta && asksSpreadDelta < config.quantityDelta) ||
+        (bidsSpreadDelta < config.spreadDelta && asksSpreadDelta < config.spreadDelta) ||
         (bidsQuantityDelta < config.quantityDelta && asksQuantityDelta < config.quantityDelta)
         ) {
         return
