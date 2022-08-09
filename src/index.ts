@@ -59,6 +59,24 @@ async function makeMarket(params: MarketMakerParams) {
     network
   } = params;
   while (true) {
+    // TODO get current percents on market, compare them with config
+    // TODO raise error if length arent equal
+    
+    const mockBids = new Array(6);
+    const mockAsks = new Array(6);
+
+    for (let i = 0; i < mockBids.length; i++) {
+      const bidsSpreadDelta = Math.abs(mockBids[i].spread - config.bids[i].spread);
+      const asksSpreadDelta = Math.abs(mockAsks[i].spread - config.asks[i].spread);
+
+      if (
+        bidsSpreadDelta < config.spreadDelta && 
+        asksSpreadDelta < config.quantityDelta
+        ) {
+        return
+      }
+    }
+
     const indexPrice = await getPrice(coinName);
 
     const batch = market.createBatchAction();
@@ -118,6 +136,7 @@ async function main() {
   const account = await near.account(args.nearAccountId);
   const tonic = new Tonic(account, args.tonicContractId);
   const market = await tonic.getMarket(args.marketId);
+
   await makeMarket({ tonic, market, config, coinName: args.assetName, ...args });
 }
 
