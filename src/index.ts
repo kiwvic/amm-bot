@@ -68,7 +68,7 @@ async function makeMarket(params: MarketMakerParams) {
 
     for (let i = 0; i < bids.length; i++) {
       const bidsQuantityDelta = Math.abs(bids[i][0] - config.bids[i].quantity);
-      const asksQuantityDelta = Math.abs(asks[i][1] - config.asks[i].quantity);
+      const asksQuantityDelta = Math.abs(asks[i][0] - config.asks[i].quantity);
 
       const bidsSpreadDelta = Math.abs(bids[i][1] - config.bids[i].spread);
       const asksSpreadDelta = Math.abs(asks[i][1] - config.asks[i].spread);
