@@ -82,7 +82,9 @@ async function makeMarket(params: MarketMakerParams) {
   while (true) {    
     const indexPrice = await getPrice(coinName);
 
-    const currentOrders = await getCurrentOrders(tonic, market.id);
+    const openOrders = await tonic.getOpenOrders(market.id);  
+
+    const currentOrders = getCurrentOrders(tonic, openOrders);
     const configOrders = getConfigOrders(config, indexPrice, baseQuantity);
 
     if (isMakeMarketNeeded(currentOrders, configOrders, config.spreadDelta, config.quantityDelta)) {

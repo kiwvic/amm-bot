@@ -33,11 +33,9 @@ export function getExplorerUrl(network: 'mainnet' | 'testnet', type: 'account' |
   throw new Error('Invalid resource type');
 }
 
-export const getCurrentOrders = async (tonic: Tonic, marketId: string) => {
+export const getCurrentOrders = (tonic: Tonic, openOrders: any) => {
   let sell = new Array();
   let buy = new Array();
-
-  const openOrders = await tonic.getOpenOrders(marketId);  
 
   for (let order of openOrders) {
     if (order.side === "Sell") {
