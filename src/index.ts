@@ -39,7 +39,7 @@ export const getPrice = async (tokenId: string) => {
         token_id: tokenId
       },
     })
-    .then((res) => res.data[tokenId]['usd']) as unknown as number;
+    .then((res) => res.data.price) as unknown as number;
 };
 
 export const getConfig = async () => {
