@@ -2,7 +2,7 @@ import { getExplorerBaseUrl } from '@tonic-foundation/config';
 import { keyStores } from 'near-api-js';
 import { FinalExecutionOutcome } from 'near-api-js/lib/providers';
 import { homedir } from 'os';
-import { Tonic } from '@tonic-foundation/tonic';
+import { Config } from './interface';
 import { QUANTITY_FACTOR, PRICE_FACTOR } from './consts'
 
 export const getGasUsage = (o: FinalExecutionOutcome) => {
@@ -50,7 +50,7 @@ export const getCurrentOrders = (openOrders: any) => {
   return { sell, buy }
 }
 
-export const getConfigOrders = (config: any, indexPrice: any, baseQuantity: any) => {
+export const getConfigOrders = (config: Config, indexPrice: number, baseQuantity: number) => {
   let buy = new Array();
   let sell = new Array();
 
