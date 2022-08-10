@@ -1,10 +1,12 @@
+import { assert } from "console";
+
 const amountOfOrdersChanged = (currentOrders: any, configOrders: any) => {
     return currentOrders.buy.length !== configOrders.buy.length ||
         currentOrders.sell.length !== configOrders.sell.length;
 }
 
 const priceChanged = (currentOrders: any, configOrders: any, spreadDelta: any) => {
-    // TODO assert eq length
+    assert(currentOrders.length === configOrders.length);
     // TODO must be sorted
 
     for (let i = 0; currentOrders.buy.length; i++) {
@@ -19,7 +21,7 @@ const priceChanged = (currentOrders: any, configOrders: any, spreadDelta: any) =
 }
 
 const quantityChanged = (currentOrders: any, configOrders: any, quantityDelta: any) => {
-    // TODO assert eq length
+    assert(currentOrders.length === configOrders.length);
     // TODO must be sorted
 
     for (let i = 0; currentOrders.buy.length; i++) {
