@@ -69,7 +69,6 @@ export const getConfigOrders = (config: any, indexPrice: any, baseQuantity: any)
 }
 
 
-
 async function makeMarket(params: MarketMakerParams) {
   const {
     tonic,
@@ -90,26 +89,20 @@ async function makeMarket(params: MarketMakerParams) {
       const batch = market.createBatchAction();
       batch.cancelAllOrders();
 
-      for (const bid_ of config.bids) {
-        const bid = parseFloat((indexPrice * (1 - bid_.spread)).toFixed(market.quoteDecimals));
-        const quantity = baseQuantity * bid_.quantity;
-
+      for (const bid of configOrders.sell) {
         batch.newOrder({
-          quantity: quantity,
-          side: 'Buy',
-          limitPrice: bid,
+          quantity: bid.quantity,
+          side: 'Sell',
+          limitPrice: bid.price,
           orderType: 'Limit',
         });
       }
 
-      for (const ask_ of config.asks) {
-        const ask = parseFloat((indexPrice * (1 + ask_.spread)).toFixed(market.quoteDecimals));
-        const quantity = baseQuantity * ask_.quantity;
-
+      for (const ask of configOrders.buy) {
         batch.newOrder({
-          quantity: quantity,
-          side: 'Sell',
-          limitPrice: ask,
+          quantity: ask.quantity,
+          side: 'Buy',
+          limitPrice: ask.price,
           orderType: 'Limit',
         });
       }
@@ -126,24 +119,6 @@ async function makeMarket(params: MarketMakerParams) {
 
     console.log(`Waiting ${orderDelayMs}ms`);
     await sleep(orderDelayMs);
-    /*
-    const {bids, asks} = await tonic.getOrderbook(market.id);
-
-    for (let i = 0; i < bids.length; i++) {
-      const bidsQuantityDelta = Math.abs(bids[i][1] - config.bids[i].quantity);
-      const asksQuantityDelta = Math.abs(asks[i][1] - config.asks[i].quantity);
-
-      const bidsSpreadDelta = Math.abs(bids[i][0] - config.bids[i].spread);
-      const asksSpreadDelta = Math.abs(asks[i][0] - config.asks[i].spread);
-
-      if (
-        (bidsSpreadDelta < config.spreadDelta && asksSpreadDelta < config.spreadDelta) ||
-        (bidsQuantityDelta < config.quantityDelta && asksQuantityDelta < config.quantityDelta)
-        ) {
-        return
-      }
-    }
-    */
   }
 }
 
@@ -165,7 +140,7 @@ async function main() {
   const tonic = new Tonic(account, args.tonicContractId);
   const market = await tonic.getMarket(args.marketId);
 
-  // await makeMarket({ tonic, market, config, coinName: args.assetName, ...args });
+  await makeMarket({ tonic, market, config, coinName: args.assetName, ...args });
 }
 
 main();
