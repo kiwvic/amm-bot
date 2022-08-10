@@ -4,7 +4,6 @@ import { FinalExecutionOutcome } from 'near-api-js/lib/providers';
 import { homedir } from 'os';
 import { Tonic } from '@tonic-foundation/tonic';
 import { QUANTITY_FACTOR, PRICE_FACTOR } from './consts'
-import BN from 'bn.js';
 
 export const getGasUsage = (o: FinalExecutionOutcome) => {
   const receiptGas = o.transaction_outcome.outcome.gas_burnt;
@@ -56,15 +55,17 @@ export const getConfigOrders = (config: any, indexPrice: any, baseQuantity: any)
   let sell = new Array();
 
   for (let i = 0; i < config.bids.length; i++) {
-    const bidQuantity = new BN(baseQuantity * config.bids[i].quantity * QUANTITY_FACTOR);
-    const bidPrice = new BN((indexPrice * (1 + config.bids[i].spread)) * PRICE_FACTOR);
+    const quantity = baseQuantity * config.bids[i].quantity
+    const bidQuantity = quantity * QUANTITY_FACTOR;
+    const bidPrice = (indexPrice * (1 + config.bids[i].spread) * quantity) * PRICE_FACTOR;
 
     sell.push({"quantity": bidQuantity, "price": bidPrice});
   }
 
   for (let i = 0; i < config.asks.length; i++) {
-    const askQuantity = new BN(baseQuantity * config.asks[i].quantity * QUANTITY_FACTOR);
-    const askPrice = new BN((indexPrice * (1 - config.asks[i].spread)) * PRICE_FACTOR);
+    const quantity = baseQuantity * config.bids[i].quantity
+    const askQuantity = quantity * QUANTITY_FACTOR;
+    const askPrice = (indexPrice * (1 - config.asks[i].spread) * quantity) * PRICE_FACTOR;
 
     buy.push({"quantity": askQuantity, "price": askPrice});
   }
