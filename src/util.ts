@@ -3,6 +3,7 @@ import { keyStores } from 'near-api-js';
 import { FinalExecutionOutcome } from 'near-api-js/lib/providers';
 import { homedir } from 'os';
 import { Tonic } from '@tonic-foundation/tonic';
+import BN from 'bn.js';
 
 export const getGasUsage = (o: FinalExecutionOutcome) => {
   const receiptGas = o.transaction_outcome.outcome.gas_burnt;
@@ -47,4 +48,25 @@ export const getCurrentOrders = (tonic: Tonic, openOrders: any) => {
   }
 
   return { sell, buy }
+}
+
+export const getConfigOrders = (config: any, indexPrice: any, baseQuantity: any) => {
+  let buy = new Array();
+  let sell = new Array();
+
+  for (let i = 0; i < config.bids.length; i++) {
+    const bidQuantity = new BN(baseQuantity * config.bids[i].quantity * QUANTITY_FACTOR);
+    const bidPrice = new BN((indexPrice * (1 + config.bids[i].spread)) * PRICE_FACTOR);
+
+    sell.push({"quantity": bidQuantity, "price": bidPrice});
+  }
+
+  for (let i = 0; i < config.asks.length; i++) {
+    const askQuantity = new BN(baseQuantity * config.asks[i].quantity * QUANTITY_FACTOR);
+    const askPrice = new BN((indexPrice * (1 - config.asks[i].spread)) * PRICE_FACTOR);
+
+    buy.push({"quantity": askQuantity, "price": askPrice});
+  }
+
+  return { buy, sell }
 }

@@ -1,8 +1,7 @@
 import { Market, Tonic } from '@tonic-foundation/tonic';
 import { getNearConfig } from '@tonic-foundation/config';
 import { Near } from 'near-api-js';
-import BN from 'bn.js';
-import { getExplorerUrl, getGasUsage, getKeystore, sleep, getCurrentOrders } from './util';
+import { getExplorerUrl, getGasUsage, getKeystore, sleep, getCurrentOrders, getConfigOrders } from './util';
 import { parse } from 'ts-command-line-args';
 import axios from 'axios';
 import { CONFIG_URL, QUANTITY_FACTOR, PRICE_FACTOR } from './consts'
@@ -45,27 +44,6 @@ export const getPrice = async (tokenId: string) => {
 
 export const getConfig = async () => {
   return (await axios.get(CONFIG_URL!)).data;
-}
-
-export const getConfigOrders = (config: any, indexPrice: any, baseQuantity: any) => {
-  let buy = new Array();
-  let sell = new Array();
-
-  for (let i = 0; i < config.bids.length; i++) {
-    const bidQuantity = new BN(baseQuantity * config.bids[i].quantity * QUANTITY_FACTOR);
-    const bidPrice = new BN((indexPrice * (1 + config.bids[i].spread)) * PRICE_FACTOR);
-
-    sell.push({"quantity": bidQuantity, "price": bidPrice});
-  }
-
-  for (let i = 0; i < config.asks.length; i++) {
-    const askQuantity = new BN(baseQuantity * config.asks[i].quantity * QUANTITY_FACTOR);
-    const askPrice = new BN((indexPrice * (1 - config.asks[i].spread)) * PRICE_FACTOR);
-
-    buy.push({"quantity": askQuantity, "price": askPrice});
-  }
-
-  return { buy, sell }
 }
 
 
