@@ -34,8 +34,8 @@ export function getExplorerUrl(network: 'mainnet' | 'testnet', type: 'account' |
 }
 
 export const getCurrentOrders = async (tonic: Tonic, marketId: string) => {
-  let sell = Array();
-  let buy = Array();
+  let sell = new Array();
+  let buy = new Array();
 
   const openOrders = await tonic.getOpenOrders(marketId);  
 
@@ -49,8 +49,4 @@ export const getCurrentOrders = async (tonic: Tonic, marketId: string) => {
   }
 
   return { sell, buy }
-}
-
-export const getConfigOrders = (config: any) => {
-  return {};
 }

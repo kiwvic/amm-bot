@@ -1,7 +1,7 @@
 import { Market, Tonic } from '@tonic-foundation/tonic';
 import { getNearConfig } from '@tonic-foundation/config';
 import { Near } from 'near-api-js';
-import { getExplorerUrl, getGasUsage, getKeystore, sleep, getCurrentOrders, getConfigOrders } from './util';
+import { getExplorerUrl, getGasUsage, getKeystore, sleep, getCurrentOrders } from './util';
 import { parse } from 'ts-command-line-args';
 import axios from 'axios';
 import * as dotenv from 'dotenv';
@@ -9,10 +9,10 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 const CONFIG_URL = process.env.CONFIG_URL;
 const TOKEN_DECIMALS = 18;
-const SPREAD_DECIMALS = 3;
+const PRICE_DECIMALS = 7;
 
 const QUANTITY_FACTOR = Math.pow(10, TOKEN_DECIMALS - 1);
-const SPREAD_FACTOR = Math.pow(10, SPREAD_DECIMALS - 1);
+const PRICE_FACTOR = Math.pow(10, PRICE_DECIMALS - 1);
 
 export interface ProgramOptions {
   marketId: string;
@@ -52,11 +52,33 @@ export const getConfig = async () => {
   return (await axios.get(CONFIG_URL!)).data;
 }
 
-const amountOfOrdersChanged = (currentOrders: any, configOrders: any) => {
-  return currentOrders.length !== configOrders.length;
+export const getConfigOrders = (config: any, indexPrice: any, baseQuantity: any) => {
+  let buy = new Array();
+  let sell = new Array();
+
+  for (let i = 0; i < config.bids.length; i++) {
+    const bidQuantity = baseQuantity * config.bids[i].quantity * QUANTITY_FACTOR;
+    const bidPrice = (indexPrice * (1 + config.bids[i].spread)) * PRICE_FACTOR;
+
+    sell.push({"quantity": bidQuantity, "price": bidPrice});
+  }
+
+  for (let i = 0; i < config.asks.length; i++) {
+    const askQuantity = baseQuantity * config.asks[i].quantity * QUANTITY_FACTOR;
+    const askPrice = (indexPrice * (1 + config.asks[i].spread)) * PRICE_FACTOR;
+
+    buy.push({"quantity": askQuantity, "price": askPrice});
+  }
+
+  return { buy, sell }
 }
 
-const spreadChanged = (currentOrders: any, configOrders: any) => {
+const amountOfOrdersChanged = (currentOrders: any, configOrders: any) => {
+  return currentOrders.buy.length !== configOrders.buy.length ||
+         currentOrders.sell.length !== configOrders.sell.length;
+}
+
+const priceChanged = (currentOrders: any, configOrders: any) => {
   return true;
 }
 
@@ -66,7 +88,7 @@ const quantityChanged = (currentOrders: any, configOrders: any) => {
 
 const isMakeMarketNeeded = (currentOrders: any, configOrders: any, indexPrice: any) => {
   return amountOfOrdersChanged(currentOrders, configOrders) ||
-         spreadChanged(currentOrders, configOrders) ||
+         priceChanged(currentOrders, configOrders) ||
          quantityChanged(currentOrders, configOrders) 
 }
 
@@ -81,9 +103,10 @@ async function makeMarket(params: MarketMakerParams) {
     network
   } = params;
   while (true) {    
-    const currentOrders = await getCurrentOrders(tonic, market.id);
-    const configOrders = getConfigOrders(config);
     const indexPrice = await getPrice(coinName);
+
+    const currentOrders = await getCurrentOrders(tonic, market.id);
+    const configOrders = getConfigOrders(config, indexPrice, baseQuantity);
 
     if (isMakeMarketNeeded(currentOrders, configOrders, indexPrice)) {
       const batch = market.createBatchAction();
