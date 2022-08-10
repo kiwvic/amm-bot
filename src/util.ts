@@ -40,10 +40,10 @@ export const getCurrentOrders = (tonic: Tonic, openOrders: any) => {
 
   for (let order of openOrders) {
     if (order.side === "Sell") {
-      sell.push({"quantity": order.remainingQuantity, "price": order.limitPrice});
+      sell.push({"quantity": order.remainingQuantity / QUANTITY_FACTOR, "price": order.limitPrice / PRICE_FACTOR });
     } 
     else if (order.side === "Buy") {
-      buy.push({"quantity": order.remainingQuantity, "price": order.limitPrice});
+      buy.push({"quantity": order.remainingQuantity / QUANTITY_FACTOR, "price": order.limitPrice / PRICE_FACTOR });
     }
   }
 
@@ -55,21 +55,15 @@ export const getConfigOrders = (config: any, indexPrice: any, baseQuantity: any)
   let sell = new Array();
 
   for (let i = 0; i < config.bids.length; i++) {
-    const quantity = baseQuantity * config.bids[i].quantity
-    const price = (indexPrice * (1 + config.bids[i].spread) * quantity);
-
-    const bidQuantity = quantity * QUANTITY_FACTOR;
-    const bidPrice = parseFloat((price * PRICE_FACTOR).toFixed());
+    const bidQuantity = baseQuantity * config.bids[i].quantity;
+    const bidPrice = indexPrice * (1 + config.bids[i].spread) * bidQuantity;
 
     sell.push({"quantity": bidQuantity, "price": bidPrice});
   }
 
   for (let i = 0; i < config.asks.length; i++) {
-    const quantity = baseQuantity * config.bids[i].quantity
-    const price = (indexPrice * (1 - config.asks[i].spread) * quantity)
-
-    const askQuantity = quantity * QUANTITY_FACTOR;
-    const askPrice = parseFloat((price * PRICE_FACTOR).toFixed());
+    const askQuantity = baseQuantity * config.bids[i].quantity;
+    const askPrice = indexPrice * (1 - config.asks[i].spread) * askQuantity;
 
     buy.push({"quantity": askQuantity, "price": askPrice});
   }
