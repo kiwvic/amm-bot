@@ -43,7 +43,9 @@ const quantityChanged = (currentOrders: any, configOrders: any, quantityDelta: a
 }
 
 export const isMakeMarketNeeded = (currentOrders: any, configOrders: any, spreadDelta: any, quantityDelta: any) => {
-    return amountOfOrdersChanged(currentOrders, configOrders) ||
-        priceChanged(currentOrders, configOrders, spreadDelta) ||
-        quantityChanged(currentOrders, configOrders, quantityDelta)
+    if (amountOfOrdersChanged(currentOrders, configOrders)) return true;
+    if (priceChanged(currentOrders, configOrders, spreadDelta)) return true;
+    if (quantityChanged(currentOrders, configOrders, quantityDelta)) return true;
+
+    return false;
 }
