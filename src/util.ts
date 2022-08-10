@@ -56,14 +56,14 @@ export const getConfigOrders = (config: any, indexPrice: any, baseQuantity: any)
 
   for (let i = 0; i < config.bids.length; i++) {
     const bidQuantity = baseQuantity * config.bids[i].quantity;
-    const bidPrice = indexPrice * (1 + config.bids[i].spread) * bidQuantity;
+    const bidPrice = indexPrice * (1 + config.bids[i].spread);
 
     sell.push({"quantity": bidQuantity, "price": bidPrice});
   }
 
   for (let i = 0; i < config.asks.length; i++) {
     const askQuantity = baseQuantity * config.bids[i].quantity;
-    const askPrice = indexPrice * (1 - config.asks[i].spread) * askQuantity;
+    const askPrice = indexPrice * (1 - config.asks[i].spread);
 
     buy.push({"quantity": askQuantity, "price": askPrice});
   }
