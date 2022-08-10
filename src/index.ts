@@ -66,7 +66,7 @@ export const getConfigOrders = (config: any, indexPrice: any, baseQuantity: any)
 
   for (let i = 0; i < config.asks.length; i++) {
     const askQuantity = new BN(baseQuantity * config.asks[i].quantity * QUANTITY_FACTOR);
-    const askPrice = new BN((indexPrice * (1 + config.asks[i].spread)) * PRICE_FACTOR);
+    const askPrice = new BN((indexPrice * (1 - config.asks[i].spread)) * PRICE_FACTOR);
 
     buy.push({"quantity": askQuantity, "price": askPrice});
   }
