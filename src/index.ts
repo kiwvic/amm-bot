@@ -4,7 +4,7 @@ import { Near } from 'near-api-js';
 import { getExplorerUrl, getGasUsage, getKeystore, sleep, getCurrentOrders, getConfigOrders } from './util';
 import { parse } from 'ts-command-line-args';
 import axios from 'axios';
-import { CONFIG_URL, QUANTITY_FACTOR, PRICE_FACTOR } from './consts'
+import { CONFIG_URL } from './consts'
 import { isMakeMarketNeeded } from './checks'
 
 

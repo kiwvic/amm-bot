@@ -3,6 +3,7 @@ import { keyStores } from 'near-api-js';
 import { FinalExecutionOutcome } from 'near-api-js/lib/providers';
 import { homedir } from 'os';
 import { Tonic } from '@tonic-foundation/tonic';
+import { CONFIG_URL, QUANTITY_FACTOR, PRICE_FACTOR } from './consts'
 import BN from 'bn.js';
 
 export const getGasUsage = (o: FinalExecutionOutcome) => {
