@@ -1,31 +1,13 @@
-import { Market, Tonic } from '@tonic-foundation/tonic';
+import { Tonic } from '@tonic-foundation/tonic';
 import { getNearConfig } from '@tonic-foundation/config';
 import { Near } from 'near-api-js';
 import { getExplorerUrl, getGasUsage, getKeystore, sleep, getCurrentOrders, getConfigOrders } from './util';
 import { parse } from 'ts-command-line-args';
 import axios from 'axios';
-import { CONFIG_URL } from './consts'
-import { isMakeMarketNeeded } from './checks'
+import { CONFIG_URL } from './consts';
+import { isMakeMarketNeeded } from './checks';
+import { MarketMakerParams, ProgramOptions } from './interface';
 
-
-export interface ProgramOptions {
-  marketId: string;
-  nearAccountId: string;
-  tonicContractId: string;
-  assetName: string;
-  baseQuantity: number;
-  network: 'mainnet' | 'testnet';
-  orderDelayMs: number;
-}
-
-export interface MarketMakerParams {
-  tonic: Tonic;
-  market: Market;
-  coinName: string;
-  baseQuantity: number;
-  orderDelayMs: number;
-  network: 'mainnet' | 'testnet';
-}
 
 const client = axios.create({
   baseURL: 'https://indexer.ref.finance/',
