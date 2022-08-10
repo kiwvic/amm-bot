@@ -4,5 +4,5 @@ yarn make-market \
     --tonicContractId=v1.orderbook.near \
     --marketId=$MARKET_ID \
     --assetName=token.pembrock.near \
-    --baseQuantity=1 \
+    --baseQuantity=10 \
     --orderDelayMs 60000

@@ -58,15 +58,15 @@ async function makeMarket(params: MarketMakerParams) {
     network
   } = params;
   while (true) {    
+    const batch = market.createBatchAction();
+
     const indexPrice = await getPrice(coinName);
 
     const openOrders = await tonic.getOpenOrders(market.id);  
-
     const currentOrders = getCurrentOrders(tonic, openOrders);
     const configOrders = getConfigOrders(config, indexPrice, baseQuantity);
 
     if (isMakeMarketNeeded(currentOrders, configOrders, config.spreadDelta, config.quantityDelta)) {
-      const batch = market.createBatchAction();
       batch.cancelAllOrders();
 
       for (const bid of configOrders.sell) {
