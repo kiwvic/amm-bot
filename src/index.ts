@@ -79,18 +79,32 @@ const amountOfOrdersChanged = (currentOrders: any, configOrders: any) => {
          currentOrders.sell.length !== configOrders.sell.length;
 }
 
-const priceChanged = (currentOrders: any, configOrders: any) => {
+const priceChanged = (currentOrders: any, configOrders: any, spreadDelta: any) => {
+  // TODO assert eq length
+  // TODO must be sorted
+
+  const delta = spreadDelta * PRICE_FACTOR;
+
+  for (let i = 0; currentOrders.buy.length; i++) {
+    if (Math.abs(currentOrders.buy[i].price - configOrders.buy[i].price) < delta) {
+      return true;
+    } 
+    else if (Math.abs(currentOrders.sell[i].price - configOrders.sell[i].price) < delta) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+const quantityChanged = (currentOrders: any, configOrders: any, quantityDelta: any) => {
   return true;
 }
 
-const quantityChanged = (currentOrders: any, configOrders: any) => {
-  return true;
-}
-
-const isMakeMarketNeeded = (currentOrders: any, configOrders: any, indexPrice: any) => {
+const isMakeMarketNeeded = (currentOrders: any, configOrders: any, spreadDelta: any, quantityDelta: any) => {
   return amountOfOrdersChanged(currentOrders, configOrders) ||
-         priceChanged(currentOrders, configOrders) ||
-         quantityChanged(currentOrders, configOrders) 
+         priceChanged(currentOrders, configOrders, spreadDelta) ||
+         quantityChanged(currentOrders, configOrders, quantityDelta) 
 }
 
 async function makeMarket(params: MarketMakerParams) {
@@ -109,7 +123,7 @@ async function makeMarket(params: MarketMakerParams) {
     const currentOrders = await getCurrentOrders(tonic, market.id);
     const configOrders = getConfigOrders(config, indexPrice, baseQuantity);
 
-    if (isMakeMarketNeeded(currentOrders, configOrders, indexPrice)) {
+    if (isMakeMarketNeeded(currentOrders, configOrders, config.spreadDelta, config.quantityDelta)) {
       const batch = market.createBatchAction();
       batch.cancelAllOrders();
 
