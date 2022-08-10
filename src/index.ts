@@ -5,15 +5,9 @@ import BN from 'bn.js';
 import { getExplorerUrl, getGasUsage, getKeystore, sleep, getCurrentOrders } from './util';
 import { parse } from 'ts-command-line-args';
 import axios from 'axios';
-import * as dotenv from 'dotenv';
+import { CONFIG_URL, QUANTITY_FACTOR, PRICE_FACTOR } from './consts'
+import { isMakeMarketNeeded } from './checks'
 
-dotenv.config();
-const CONFIG_URL = process.env.CONFIG_URL;
-const TOKEN_DECIMALS = 18;
-const PRICE_DECIMALS = 7;
-
-const QUANTITY_FACTOR = Math.pow(10, TOKEN_DECIMALS - 1);
-const PRICE_FACTOR = Math.pow(10, PRICE_DECIMALS - 1);
 
 export interface ProgramOptions {
   marketId: string;
@@ -74,52 +68,7 @@ export const getConfigOrders = (config: any, indexPrice: any, baseQuantity: any)
   return { buy, sell }
 }
 
-const amountOfOrdersChanged = (currentOrders: any, configOrders: any) => {
-  return currentOrders.buy.length !== configOrders.buy.length ||
-         currentOrders.sell.length !== configOrders.sell.length;
-}
 
-const priceChanged = (currentOrders: any, configOrders: any, spreadDelta: any) => {
-  // TODO assert eq length
-  // TODO must be sorted
-
-  const delta = spreadDelta * PRICE_FACTOR;
-
-  for (let i = 0; currentOrders.buy.length; i++) {
-    if (Math.abs(currentOrders.buy[i].price - configOrders.buy[i].price) < delta) {
-      return true;
-    } 
-    else if (Math.abs(currentOrders.sell[i].price - configOrders.sell[i].price) < delta) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
-const quantityChanged = (currentOrders: any, configOrders: any, quantityDelta: any) => {
-  // TODO assert eq length
-  // TODO must be sorted
-
-  const delta = quantityDelta * QUANTITY_FACTOR;
-
-  for (let i = 0; currentOrders.buy.length; i++) {
-    if (Math.abs(currentOrders.buy[i].quantity - configOrders.buy[i].quantity) < delta) {
-      return true;
-    } 
-    else if (Math.abs(currentOrders.sell[i].quantity - configOrders.sell[i].quantity) < delta) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
-const isMakeMarketNeeded = (currentOrders: any, configOrders: any, spreadDelta: any, quantityDelta: any) => {
-  return amountOfOrdersChanged(currentOrders, configOrders) ||
-         priceChanged(currentOrders, configOrders, spreadDelta) ||
-         quantityChanged(currentOrders, configOrders, quantityDelta) 
-}
 
 async function makeMarket(params: MarketMakerParams) {
   const {
@@ -216,7 +165,7 @@ async function main() {
   const tonic = new Tonic(account, args.tonicContractId);
   const market = await tonic.getMarket(args.marketId);
 
-  await makeMarket({ tonic, market, config, coinName: args.assetName, ...args });
+  // await makeMarket({ tonic, market, config, coinName: args.assetName, ...args });
 }
 
 main();
