@@ -98,7 +98,21 @@ const priceChanged = (currentOrders: any, configOrders: any, spreadDelta: any) =
 }
 
 const quantityChanged = (currentOrders: any, configOrders: any, quantityDelta: any) => {
-  return true;
+  // TODO assert eq length
+  // TODO must be sorted
+
+  const delta = quantityDelta * QUANTITY_FACTOR;
+
+  for (let i = 0; currentOrders.buy.length; i++) {
+    if (Math.abs(currentOrders.buy[i].quantity - configOrders.buy[i].quantity) < delta) {
+      return true;
+    } 
+    else if (Math.abs(currentOrders.sell[i].quantity - configOrders.sell[i].quantity) < delta) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 const isMakeMarketNeeded = (currentOrders: any, configOrders: any, spreadDelta: any, quantityDelta: any) => {
