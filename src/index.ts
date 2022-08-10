@@ -21,7 +21,6 @@ export interface ProgramOptions {
 export interface MarketMakerParams {
   tonic: Tonic;
   market: Market;
-  config: any;
   coinName: string;
   baseQuantity: number;
   orderDelayMs: number;
@@ -51,19 +50,20 @@ async function makeMarket(params: MarketMakerParams) {
   const {
     tonic,
     market,
-    config,
     coinName,
     baseQuantity, 
     orderDelayMs,
     network
   } = params;
   while (true) {    
+    const config = await getConfig();
+
     const batch = market.createBatchAction();
 
     const indexPrice = await getPrice(coinName);
 
     const openOrders = await tonic.getOpenOrders(market.id);  
-    const currentOrders = getCurrentOrders(tonic, openOrders);
+    const currentOrders = getCurrentOrders(openOrders);
     const configOrders = getConfigOrders(config, indexPrice, baseQuantity);
 
     if (isMakeMarketNeeded(currentOrders, configOrders, config.spreadDelta, config.quantityDelta)) {
@@ -113,14 +113,13 @@ async function main() {
     network: String,
     orderDelayMs: Number,
   });
-  const config = await getConfig();
   const keyStore = await getKeystore();
   const near = new Near({ ...getNearConfig(args.network), keyStore });
   const account = await near.account(args.nearAccountId);
   const tonic = new Tonic(account, args.tonicContractId);
   const market = await tonic.getMarket(args.marketId);
 
-  await makeMarket({ tonic, market, config, coinName: args.assetName, ...args });
+  await makeMarket({ tonic, market, coinName: args.assetName, ...args });
 }
 
 main();

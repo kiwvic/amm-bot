@@ -34,7 +34,7 @@ export function getExplorerUrl(network: 'mainnet' | 'testnet', type: 'account' |
   throw new Error('Invalid resource type');
 }
 
-export const getCurrentOrders = (tonic: Tonic, openOrders: any) => {
+export const getCurrentOrders = (openOrders: any) => {
   let sell = new Array();
   let buy = new Array();
 
