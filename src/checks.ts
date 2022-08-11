@@ -8,16 +8,16 @@ const amountOfOrdersChanged = (currentOrders: any, configOrders: any) => {
 const priceChanged = (
     currentOrders: any,
     configOrders: any,
-    spreadThreshold: any
+    priceThreshold: any
   ) => {
     assert(currentOrders.length === configOrders.length);
     // TODO must be sorted
   
     for (let i = 0; currentOrders.buy.length; i++) {
       if (
-        Math.abs(1 - currentOrders.buy[i].price / configOrders.buy[i].price) > spreadThreshold 
+        Math.abs(1 - currentOrders.buy[i].price / configOrders.buy[i].price) > priceThreshold 
         ||
-        Math.abs(1 - currentOrders.sell[i].price / configOrders.sell[i].price) > spreadThreshold
+        Math.abs(1 - currentOrders.sell[i].price / configOrders.sell[i].price) > priceThreshold
       ) return true;
     }
   
@@ -45,9 +45,9 @@ const quantityChanged = (
   };
   
 
-export const isMakeMarketNeeded = (currentOrders: any, configOrders: any, spreadThreshold: any, quantityThreshold: any) => {
+export const isMakeMarketNeeded = (currentOrders: any, configOrders: any, priceThreshold: any, quantityThreshold: any) => {
     if (amountOfOrdersChanged(currentOrders, configOrders)) return true;
-    if (priceChanged(currentOrders, configOrders, spreadThreshold)) return true;
+    if (priceChanged(currentOrders, configOrders, priceThreshold)) return true;
     if (quantityChanged(currentOrders, configOrders, quantityThreshold)) return true;
 
     return false;

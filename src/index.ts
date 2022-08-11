@@ -49,7 +49,7 @@ async function makeMarket(params: MarketMakerParams) {
     const currentOrders = getCurrentOrders(openOrders);
     const configOrders = getConfigOrders(config, indexPrice, baseQuantityToken, baseQuantityUSDC);
 
-    if (isMakeMarketNeeded(currentOrders, configOrders, config.spreadThreshold, config.quantityThreshold)) {
+    if (isMakeMarketNeeded(currentOrders, configOrders, config.priceThreshold, config.quantityThreshold)) {
       batch.cancelAllOrders();
 
       for (const bid of configOrders.sell) {
