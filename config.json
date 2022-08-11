@@ -15,6 +15,6 @@
         {"quantity": 0.1, "spread": 0.10},
         {"quantity": 0.1, "spread": 0.12}
     ],
-    "spreadDelta": 0.01,
-    "quantityDelta": 0.01
+    "spreadThreshold": 0.01,
+    "quantityThreshold": 0.01
 }

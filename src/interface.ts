@@ -29,6 +29,6 @@ interface OrderConfig {
 export interface Config {
   bids: Array<OrderConfig>;
   asks: Array<OrderConfig>;
-  spreadDelta: number;
-  quantityDelta: number;
+  spreadThreshold: number;
+  quantityThreshold: number;
 }

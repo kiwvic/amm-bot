@@ -45,10 +45,10 @@ const quantityChanged = (
   };
   
 
-export const isMakeMarketNeeded = (currentOrders: any, configOrders: any, spreadDelta: any, quantityDelta: any) => {
+export const isMakeMarketNeeded = (currentOrders: any, configOrders: any, spreadThreshold: any, quantityThreshold: any) => {
     if (amountOfOrdersChanged(currentOrders, configOrders)) return true;
-    if (priceChanged(currentOrders, configOrders, spreadDelta)) return true;
-    if (quantityChanged(currentOrders, configOrders, quantityDelta)) return true;
+    if (priceChanged(currentOrders, configOrders, spreadThreshold)) return true;
+    if (quantityChanged(currentOrders, configOrders, quantityThreshold)) return true;
 
     return false;
 }
