@@ -5,35 +5,45 @@ const amountOfOrdersChanged = (currentOrders: any, configOrders: any) => {
         currentOrders.sell.length !== configOrders.sell.length;
 }
 
-const priceChanged = (currentOrders: any, configOrders: any, spreadDelta: any) => {
+const priceChanged = (
+    currentOrders: any,
+    configOrders: any,
+    spreadThreshold: any
+  ) => {
     assert(currentOrders.length === configOrders.length);
     // TODO must be sorted
-
+  
     for (let i = 0; currentOrders.buy.length; i++) {
-        if (Math.abs(currentOrders.buy[i].price - configOrders.buy[i].price) < spreadDelta) {
-            return true;
-        } else if (Math.abs(currentOrders.sell[i].price - configOrders.sell[i].price) < spreadDelta) {
-            return true;
-        }
+      if (
+        Math.abs(1 - currentOrders.buy[i].price / configOrders.buy[i].price) > spreadThreshold 
+        ||
+        Math.abs(1 - currentOrders.sell[i].price / configOrders.sell[i].price) > spreadThreshold
+      ) return true;
     }
-
+  
     return false;
-}
+};
+  
 
-const quantityChanged = (currentOrders: any, configOrders: any, quantityDelta: any) => {
+const quantityChanged = (
+    currentOrders: any,
+    configOrders: any,
+    quantityThreshold: any
+  ) => {
     assert(currentOrders.length === configOrders.length);
     // TODO must be sorted
-
+  
     for (let i = 0; currentOrders.buy.length; i++) {
-        if (Math.abs(currentOrders.buy[i].quantity - configOrders.buy[i].quantity) < quantityDelta) {
-            return true;
-        } else if (Math.abs(currentOrders.sell[i].quantity - configOrders.sell[i].quantity) < quantityDelta) {
-            return true;
-        }
+      if (
+        Math.abs(1 - currentOrders.buy[i].quantity / configOrders.buy[i].quantity) > quantityThreshold 
+        ||
+        Math.abs(1 - currentOrders.sell[i].quantity / configOrders.sell[i].quantity) > quantityThreshold
+      ) return true;
     }
-
+  
     return false;
-}
+  };
+  
 
 export const isMakeMarketNeeded = (currentOrders: any, configOrders: any, spreadDelta: any, quantityDelta: any) => {
     if (amountOfOrdersChanged(currentOrders, configOrders)) return true;
