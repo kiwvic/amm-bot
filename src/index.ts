@@ -33,7 +33,8 @@ async function makeMarket(params: MarketMakerParams) {
     tonic,
     market,
     coinName,
-    baseQuantity, 
+    baseQuantityToken,
+    baseQuantityUSDC, 
     orderDelayMs,
     network
   } = params;
@@ -46,7 +47,7 @@ async function makeMarket(params: MarketMakerParams) {
 
     const openOrders = await tonic.getOpenOrders(market.id);  
     const currentOrders = getCurrentOrders(openOrders);
-    const configOrders = getConfigOrders(config, indexPrice, baseQuantity);
+    const configOrders = getConfigOrders(config, indexPrice, baseQuantityToken, baseQuantityUSDC);
 
     if (isMakeMarketNeeded(currentOrders, configOrders, config.spreadDelta, config.quantityDelta)) {
       batch.cancelAllOrders();
@@ -90,7 +91,8 @@ async function main() {
     nearAccountId: String,
     tonicContractId: String,
     assetName: String,
-    baseQuantity: Number,
+    baseQuantityToken: Number,
+    baseQuantityUSDC: Number,
     // @ts-ignore
     network: String,
     orderDelayMs: Number,

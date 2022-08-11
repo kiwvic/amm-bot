@@ -50,19 +50,19 @@ export const getCurrentOrders = (openOrders: any) => {
   return { sell, buy }
 }
 
-export const getConfigOrders = (config: Config, indexPrice: number, baseQuantity: number) => {
+export const getConfigOrders = (config: Config, indexPrice: number, baseQuantityToken: number, baseQuantityUSDC: number) => {
   let buy = new Array();
   let sell = new Array();
 
   for (let i = 0; i < config.bids.length; i++) {
-    const bidQuantity = baseQuantity * config.bids[i].quantity;
+    const bidQuantity = baseQuantityToken * config.bids[i].quantity;
     const bidPrice = indexPrice * (1 + config.bids[i].spread);
 
     sell.push({"quantity": bidQuantity, "price": bidPrice});
   }
 
   for (let i = 0; i < config.asks.length; i++) {
-    const askQuantity = baseQuantity * config.bids[i].quantity;
+    const askQuantity = baseQuantityUSDC * config.bids[i].quantity;
     const askPrice = indexPrice * (1 - config.asks[i].spread);
 
     buy.push({"quantity": askQuantity, "price": askPrice});
