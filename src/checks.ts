@@ -11,8 +11,10 @@ const priceChanged = (
     priceThreshold: any
   ) => {
     assert(currentOrders.length === configOrders.length);
-    // TODO must be sorted
-  
+
+    currentOrders.buy.sort((a: any, b: any) => a.price - b.price);
+    currentOrders.sell.sort((a: any, b: any) => a.price - b.price);
+
     for (let i = 0; currentOrders.buy.length; i++) {
       if (
         Math.abs(1 - currentOrders.buy[i].price / configOrders.buy[i].price) > priceThreshold 
@@ -31,7 +33,9 @@ const quantityChanged = (
     quantityThreshold: any
   ) => {
     assert(currentOrders.length === configOrders.length);
-    // TODO must be sorted
+    
+    currentOrders.buy.sort((a: any, b: any) => a.price - b.price);
+    currentOrders.sell.sort((a: any, b: any) => a.price - b.price);
   
     for (let i = 0; currentOrders.buy.length; i++) {
       if (
