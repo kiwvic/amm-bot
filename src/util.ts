@@ -41,7 +41,7 @@ export function getExplorerUrl(
   throw new Error("Invalid resource type");
 }
 
-export const getCurrentOrders = (openOrders: any) => {
+export const openOrdersToOrderBook = (openOrders: any) => {
   let sell = new Array();
   let buy = new Array();
 
@@ -62,7 +62,7 @@ export const getCurrentOrders = (openOrders: any) => {
   return { sell, buy };
 };
 
-export const getConfigOrders = (
+export const getOrderBookFromConfig = (
   config: Config,
   indexPrice: number,
   baseQuantityToken: number,

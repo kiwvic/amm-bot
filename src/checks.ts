@@ -8,6 +8,11 @@ const amountOfOrdersChanged = (currentOrders: any, configOrders: any) => {
   );
 };
 
+const sortOrderBook = (orderBook: OrderBook) => {
+  orderBook.buy.sort((a: Order, b: Order) => a.price - b.price);
+  orderBook.sell.sort((a: Order, b: Order) => a.price - b.price);
+}
+
 const priceChanged = (
   currentOrders: OrderBook,
   configOrders: OrderBook,
@@ -16,8 +21,8 @@ const priceChanged = (
   assert(currentOrders.buy.length === configOrders.buy.length);
   assert(currentOrders.sell.length === configOrders.sell.length);
 
-  currentOrders.buy.sort((a: Order, b: Order) => a.price - b.price);
-  currentOrders.sell.sort((a: Order, b: Order) => a.price - b.price);
+  sortOrderBook(currentOrders);
+
 
   for (let i = 0; currentOrders.buy.length; i++) {
     if (
@@ -37,9 +42,8 @@ const quantityChanged = (
 ) => {
   assert(currentOrders.buy.length === configOrders.buy.length);
   assert(currentOrders.sell.length === configOrders.sell.length);
-
-  currentOrders.buy.sort((a: Order, b: Order) => a.price - b.price);
-  currentOrders.sell.sort((a: Order, b: Order) => a.price - b.price);
+  
+  sortOrderBook(currentOrders);
 
   for (let i = 0; currentOrders.buy.length; i++) {
     if (

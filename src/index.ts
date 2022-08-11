@@ -6,8 +6,8 @@ import {
   getGasUsage,
   getKeystore,
   sleep,
-  getCurrentOrders,
-  getConfigOrders,
+  openOrdersToOrderBook,
+  getOrderBookFromConfig,
 } from "./util";
 import { parse } from "ts-command-line-args";
 import axios from "axios";
@@ -51,8 +51,9 @@ async function makeMarket(params: MarketMakerParams) {
     const indexPrice = await getPrice(coinName);
 
     const openOrders = await tonic.getOpenOrders(market.id);
-    const currentOrders = getCurrentOrders(openOrders);
-    const configOrders = getConfigOrders(
+    const currentOrders = openOrdersToOrderBook(openOrders);
+
+    const configOrders = getOrderBookFromConfig(
       config,
       indexPrice,
       baseQuantityToken,
