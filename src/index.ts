@@ -48,7 +48,7 @@ async function makeMarket(params: MarketMakerParams) {
     const openOrders = await tonic.getOpenOrders(market.id);  
     const currentOrders = getCurrentOrders(openOrders);
     const configOrders = getConfigOrders(config, indexPrice, baseQuantityToken, baseQuantityUSDC);
-
+    console.log(configOrders);/*
     if (isMakeMarketNeeded(currentOrders, configOrders, config.spreadDelta, config.quantityDelta)) {
       batch.cancelAllOrders();
 
@@ -78,7 +78,7 @@ async function makeMarket(params: MarketMakerParams) {
       } catch (e) {
         console.log('Order failed', e);
       }
-    }
+    }*/
 
     console.log(`Waiting ${orderDelayMs}ms`);
     await sleep(orderDelayMs);

@@ -62,8 +62,9 @@ export const getConfigOrders = (config: Config, indexPrice: number, baseQuantity
   }
 
   for (let i = 0; i < config.asks.length; i++) {
-    const askQuantity = baseQuantityUSDC * config.bids[i].quantity;
-    const askPrice = indexPrice * (1 - config.asks[i].spread);
+    const askPrice = baseQuantityUSDC * config.asks[i].quantity;
+    const pricePerToken = indexPrice * (1 - config.asks[i].spread);
+    const askQuantity = parseFloat((askPrice / pricePerToken).toFixed(1));
 
     buy.push({"quantity": askQuantity, "price": askPrice});
   }

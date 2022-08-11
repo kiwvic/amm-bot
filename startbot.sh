@@ -5,5 +5,5 @@ yarn make-market \
     --marketId=$MARKET_ID \
     --assetName=token.pembrock.near \
     --baseQuantityToken=10 \
-    --baseQuantityUSDC=1 \
+    --baseQuantityUSDC=4 \
     --orderDelayMs 60000
