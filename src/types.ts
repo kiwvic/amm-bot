@@ -5,7 +5,7 @@ export interface ProgramOptions {
   nearAccountId: string;
   tonicContractId: string;
   assetName: string;
-  baseQuantityToken: number;
+  baseQuantityPEM: number;
   baseQuantityUSDC: number;
   network: "mainnet" | "testnet";
   orderDelayMs: number;
@@ -15,7 +15,7 @@ export interface MarketMakerParams {
   tonic: Tonic;
   market: Market;
   coinName: string;
-  baseQuantityToken: number;
+  baseQuantityPEM: number;
   baseQuantityUSDC: number;
   orderDelayMs: number;
   network: "mainnet" | "testnet";
@@ -23,7 +23,7 @@ export interface MarketMakerParams {
 
 interface OrderConfig {
   quantity: number;
-  spread: number; 
+  spread: number;
 }
 
 export interface Config {
@@ -35,7 +35,7 @@ export interface Config {
 
 export interface Order {
   quantity: number;
-  price: number; 
+  price: number;
 }
 
 export interface OrderBook {

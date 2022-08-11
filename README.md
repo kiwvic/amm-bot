@@ -4,7 +4,7 @@ v1.orderbook.testnet / v1.orderbook.near
 ```bash
 npm i -g @tonic-foundation/cli
 export TONIC_CONTRACT_ID=v1.orderbook.near
-export MARKET_ID=2UmzUXYpaZg4vXfFVmD7r8mYUYkKEF19xpjLw7ygDUwp # NEAR/USDC
+export MARKET_ID=EQNFsoETbeJshWW4h2sh7bsqJ4Cz2XSHsSDETj1Q2uUb # PEM/USDC
 export YOUR_ACCOUNT_ID= # your NEAR wallet address
 export NEAR_ENV=mainnet
 

@@ -1,5 +1,5 @@
 import { assert } from "console";
-import { OrderBook, Order } from "./interface";
+import { OrderBook, Order } from "./types";
 
 const amountOfOrdersChanged = (currentOrders: any, configOrders: any) => {
   return (
@@ -25,7 +25,7 @@ const priceChanged = (
 
   for (let i = 0; currentOrders.buy.length; i++) {
     if (
-      Math.abs(1 - currentOrders.buy[i].price / configOrders.buy[i].price) > priceThreshold 
+      Math.abs(1 - currentOrders.buy[i].price / configOrders.buy[i].price) > priceThreshold
       ||
       Math.abs(1 - currentOrders.sell[i].price / configOrders.sell[i].price) > priceThreshold
     ) return true;
@@ -41,12 +41,12 @@ const quantityChanged = (
 ) => {
   assert(currentOrders.buy.length === configOrders.buy.length);
   assert(currentOrders.sell.length === configOrders.sell.length);
-  
+
   sortOrderBook(currentOrders);
 
   for (let i = 0; currentOrders.buy.length; i++) {
     if (
-      Math.abs(1 - currentOrders.buy[i].quantity / configOrders.buy[i].quantity) > quantityThreshold 
+      Math.abs(1 - currentOrders.buy[i].quantity / configOrders.buy[i].quantity) > quantityThreshold
       ||
       Math.abs(1 - currentOrders.sell[i].quantity / configOrders.sell[i].quantity) > quantityThreshold
     ) return true;

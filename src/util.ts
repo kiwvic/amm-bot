@@ -1,9 +1,10 @@
-import { getExplorerBaseUrl } from "@tonic-foundation/config";
-import { keyStores } from "near-api-js";
-import { FinalExecutionOutcome } from "near-api-js/lib/providers";
-import { homedir } from "os";
-import { Config } from "./interface";
-import { QUANTITY_FACTOR, PRICE_FACTOR } from "./consts";
+import {getExplorerBaseUrl} from "@tonic-foundation/config";
+import {keyStores} from "near-api-js";
+import {FinalExecutionOutcome} from "near-api-js/lib/providers";
+import {homedir} from "os";
+import {Config, Order} from "./types";
+import {QUANTITY_FACTOR, PRICE_FACTOR} from "./consts";
+import path from "path";
 
 export const getGasUsage = (o: FinalExecutionOutcome) => {
   const receiptGas = o.transaction_outcome.outcome.gas_burnt;
@@ -17,7 +18,7 @@ export const getGasUsage = (o: FinalExecutionOutcome) => {
 export const getKeystore = async () => {
   const HOME_DIR = homedir();
   const CREDENTIALS_DIR = ".near-credentials";
-  const credentialsPath = require("path").join(HOME_DIR, CREDENTIALS_DIR);
+  const credentialsPath = path.join(HOME_DIR, CREDENTIALS_DIR);
 
   return new keyStores.UnencryptedFileSystemKeyStore(credentialsPath);
 };
@@ -32,18 +33,14 @@ export function getExplorerUrl(
   id: string
 ) {
   const baseUrl = getExplorerBaseUrl(network);
-  if (type === "account") {
-    return `${baseUrl}/address/${id}`;
-  }
-  if (type === "transaction") {
-    return `${baseUrl}/txns/${id}`;
-  }
+  if (type === "account") return `${baseUrl}/address/${id}`
+  if (type === "transaction") return `${baseUrl}/txns/${id}`;
   throw new Error("Invalid resource type");
 }
 
 export const openOrdersToOrderBook = (openOrders: any) => {
-  let sell = new Array();
-  let buy = new Array();
+  let sell = [];
+  let buy = [];
 
   for (let order of openOrders) {
     if (order.side === "Sell") {
@@ -59,7 +56,7 @@ export const openOrdersToOrderBook = (openOrders: any) => {
     }
   }
 
-  return { sell, buy };
+  return {sell, buy};
 };
 
 export const getOrderBookFromConfig = (
@@ -68,23 +65,22 @@ export const getOrderBookFromConfig = (
   baseQuantityToken: number,
   baseQuantityUSDC: number
 ) => {
-  let buy = new Array();
-  let sell = new Array();
+  let buy: Order[] = [];
+  let sell: Order[] = [];
 
-  for (let i = 0; i < config.bids.length; i++) {
-    const bidQuantity = baseQuantityToken * config.bids[i].quantity;
-    const bidPrice = indexPrice * (1 + config.bids[i].spread);
-
+  config.bids.forEach(item => {
+    const bidQuantity = baseQuantityToken * item.quantity;
+    const bidPrice = indexPrice * (1 + item.spread);
     sell.push({ quantity: bidQuantity, price: bidPrice });
-  }
+  });
 
-  for (let i = 0; i < config.asks.length; i++) {
-    const totalUSDC = baseQuantityUSDC * config.asks[i].quantity;
-    const askPrice = indexPrice * (1 - config.asks[i].spread); // price per token
+  config.asks.forEach(item => {
+    const totalUSDC = baseQuantityUSDC * item.quantity;
+    const askPrice = indexPrice * (1 - item.spread); // price per token
     const askQuantity = parseFloat((totalUSDC / askPrice).toFixed(1));
 
-    buy.push({ quantity: askQuantity, price: askPrice });
-  }
+    buy.push({quantity: askQuantity, price: askPrice});
+  });
 
-  return { buy, sell };
+  return {buy, sell};
 };
