@@ -1,4 +1,5 @@
 import { assert } from "console";
+import { OrderBook, Order } from "./interface";
 
 const amountOfOrdersChanged = (currentOrders: any, configOrders: any) => {
   return (
@@ -8,44 +9,44 @@ const amountOfOrdersChanged = (currentOrders: any, configOrders: any) => {
 };
 
 const priceChanged = (
-  currentOrders: any,
-  configOrders: any,
-  priceThreshold: any
+  currentOrders: OrderBook,
+  configOrders: OrderBook,
+  priceThreshold: number
 ) => {
-  assert(currentOrders.length === configOrders.length);
+  assert(currentOrders.buy.length === configOrders.buy.length);
+  assert(currentOrders.sell.length === configOrders.sell.length);
 
-  currentOrders.buy.sort((a: any, b: any) => a.price - b.price);
-  currentOrders.sell.sort((a: any, b: any) => a.price - b.price);
+  currentOrders.buy.sort((a: Order, b: Order) => a.price - b.price);
+  currentOrders.sell.sort((a: Order, b: Order) => a.price - b.price);
 
   for (let i = 0; currentOrders.buy.length; i++) {
     if (
       Math.abs(1 - currentOrders.buy[i].price / configOrders.buy[i].price) > priceThreshold 
       ||
       Math.abs(1 - currentOrders.sell[i].price / configOrders.sell[i].price) > priceThreshold
-    )
-      return true;
+    ) return true;
   }
 
   return false;
 };
 
 const quantityChanged = (
-  currentOrders: any,
-  configOrders: any,
-  quantityThreshold: any
+  currentOrders: OrderBook,
+  configOrders: OrderBook,
+  quantityThreshold: number
 ) => {
-  assert(currentOrders.length === configOrders.length);
+  assert(currentOrders.buy.length === configOrders.buy.length);
+  assert(currentOrders.sell.length === configOrders.sell.length);
 
-  currentOrders.buy.sort((a: any, b: any) => a.price - b.price);
-  currentOrders.sell.sort((a: any, b: any) => a.price - b.price);
+  currentOrders.buy.sort((a: Order, b: Order) => a.price - b.price);
+  currentOrders.sell.sort((a: Order, b: Order) => a.price - b.price);
 
   for (let i = 0; currentOrders.buy.length; i++) {
     if (
       Math.abs(1 - currentOrders.buy[i].quantity / configOrders.buy[i].quantity) > quantityThreshold 
       ||
       Math.abs(1 - currentOrders.sell[i].quantity / configOrders.sell[i].quantity) > quantityThreshold
-    )
-      return true;
+    ) return true;
   }
 
   return false;

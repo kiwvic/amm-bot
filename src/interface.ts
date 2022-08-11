@@ -32,3 +32,13 @@ export interface Config {
   priceThreshold: number;
   quantityThreshold: number;
 }
+
+export interface Order {
+  quantity: number;
+  price: number; 
+}
+
+export interface OrderBook {
+  buy: Array<Order>;
+  sell: Array<Order>;
+}
