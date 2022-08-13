@@ -1,3 +1,10 @@
+env_parse() {
+    echo `cat .env | grep $1= | cut -d '=' -f2`
+}
+
+YOUR_ACCOUNT_ID=$(env_parse YOUR_ACCOUNT_ID)
+MARKET_ID=$(env_parse MARKET_ID)
+
 yarn make-market \
     --network=mainnet \
     --nearAccountId=$YOUR_ACCOUNT_ID \
