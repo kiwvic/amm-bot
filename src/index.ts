@@ -9,9 +9,7 @@ import {
   openOrdersToOrderBook,
   getOrderBookFromConfig,
 } from "./util";
-import {parse} from "ts-command-line-args";
 import axios from "axios";
-import {CONFIG_URL} from "./consts";
 import {isMakeMarketNeeded} from "./checks";
 import {MarketMakerParams, ProgramOptions} from "./types";
 
@@ -24,8 +22,8 @@ export const getPrice = async (tokenId: string) => {
     .then((res) => res.data.price) as unknown as number;
 };
 
-export const getConfig = async () => {
-  return (await axios.get(CONFIG_URL!)).data;
+export const getOrderConfig = async () => {
+  return require("../order-config.json");
 };
 
 function createBatch(market: any, configOrders: { buy: any[]; sell: any[] }) {
@@ -54,14 +52,14 @@ function createBatch(market: any, configOrders: { buy: any[]; sell: any[] }) {
 }
 
 async function makeMarket(params: MarketMakerParams) {
-  const {tonic, market, coinName, baseQuantityPEM, baseQuantityUSDC, orderDelayMs, network,} = params;
+  const {tonic, market, assetName, baseQuantity, quoteQuantity, orderDelayMs, network,} = params;
 
   while (true) {
-    const config = await getConfig();
+    const config = await getOrderConfig();
 
-    const indexPrice = await getPrice(coinName);
+    const indexPrice = await getPrice(assetName);
     const currentOrders = openOrdersToOrderBook(await tonic.getOpenOrders(market.id));
-    const configOrders = getOrderBookFromConfig(config, indexPrice, baseQuantityPEM, baseQuantityUSDC);
+    const configOrders = getOrderBookFromConfig(config, indexPrice, baseQuantity, quoteQuantity);
 
     if (isMakeMarketNeeded(currentOrders, configOrders, config.priceThreshold, config.quantityThreshold)) {
       const batch = createBatch(market, configOrders);
@@ -85,17 +83,8 @@ async function makeMarket(params: MarketMakerParams) {
 }
 
 async function main() {
-  const args = parse<ProgramOptions>({
-    marketId: String,
-    nearAccountId: String,
-    tonicContractId: String,
-    assetName: String,
-    baseQuantityPEM: Number,
-    baseQuantityUSDC: Number,
-    // @ts-ignore
-    network: String,
-    orderDelayMs: Number,
-  });
+  const args: ProgramOptions = require("../config.json");
+  
   const keyStore = await getKeystore();
   const near = new Near({...getNearConfig(args.network), keyStore});
   const account = await near.account(args.nearAccountId);
@@ -103,7 +92,7 @@ async function main() {
   const tonic = new Tonic(account, args.tonicContractId);
   const market = await tonic.getMarket(args.marketId);
 
-  await makeMarket({tonic, market, coinName: args.assetName, ...args});
+  await makeMarket({tonic, market, ...args});
 }
 
 main();

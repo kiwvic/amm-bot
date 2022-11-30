@@ -1,22 +1,31 @@
 import { Market, Tonic } from "@tonic-foundation/tonic";
 
 export interface ProgramOptions {
-  marketId: string;
+  network: "mainnet" | "testnet";
   nearAccountId: string;
   tonicContractId: string;
+  marketId: string;
   assetName: string;
-  baseQuantityPEM: number;
-  baseQuantityUSDC: number;
-  network: "mainnet" | "testnet";
+  baseQuantity: number;
+  quoteQuantity: number
   orderDelayMs: number;
+
+  hft: boolean;
+  hftChance: number;
+  orderPricePercentHft: number;
+  randomTokenMin: number;
+  randomTokenMax: number;
+  mandatoryIterationRecharge: number;
+  sameOrderStreak: number;
+  priceChangeThresholdPercent: number
 }
 
 export interface MarketMakerParams {
   tonic: Tonic;
   market: Market;
-  coinName: string;
-  baseQuantityPEM: number;
-  baseQuantityUSDC: number;
+  assetName: string;
+  baseQuantity: number;
+  quoteQuantity: number;
   orderDelayMs: number;
   network: "mainnet" | "testnet";
 }

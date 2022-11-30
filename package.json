@@ -23,8 +23,6 @@
     "@tonic-foundation/tonic": "^0.0.7",
     "axios": "^0.26.0",
     "bn.js": "^5.2.0",
-    "dotenv": "^16.0.1",
-    "os": "^0.1.2",
-    "ts-command-line-args": "^2.3.1"
+    "os": "^0.1.2"
   }
 }
