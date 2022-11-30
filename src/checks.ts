@@ -1,4 +1,3 @@
-import { assert } from "console";
 import { OrderBook, Order } from "./types";
 
 const amountOfOrdersChanged = (currentOrders: any, configOrders: any) => {
@@ -18,12 +17,9 @@ const priceChanged = (
   configOrders: OrderBook,
   priceThreshold: number
 ) => {
-  assert(currentOrders.buy.length === configOrders.buy.length);
-  assert(currentOrders.sell.length === configOrders.sell.length);
-
   sortOrderBook(currentOrders);
 
-  for (let i = 0; currentOrders.buy.length; i++) {
+  for (let i = 0; i < currentOrders.buy.length - 1; i++) {
     if (
       Math.abs(1 - currentOrders.buy[i].price / configOrders.buy[i].price) > priceThreshold
       ||
@@ -39,12 +35,9 @@ const quantityChanged = (
   configOrders: OrderBook,
   quantityThreshold: number
 ) => {
-  assert(currentOrders.buy.length === configOrders.buy.length);
-  assert(currentOrders.sell.length === configOrders.sell.length);
-
   sortOrderBook(currentOrders);
 
-  for (let i = 0; currentOrders.buy.length; i++) {
+  for (let i = 0; i < currentOrders.buy.length - 1; i++) {
     if (
       Math.abs(1 - currentOrders.buy[i].quantity / configOrders.buy[i].quantity) > quantityThreshold
       ||
@@ -65,5 +58,7 @@ export const isMakeMarketNeeded = (
   if (priceChanged(currentOrders, configOrders, priceThreshold)) return true;
   if (quantityChanged(currentOrders, configOrders, quantityThreshold)) return true;
 
+  console.log('No changes detected.');
+  
   return false;
 };
