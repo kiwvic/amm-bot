@@ -6,7 +6,7 @@
     "assetName": "token.pembrock.near",
     "baseQuantity": 29624,
     "quoteQuantity": 1356,
-    "orderDelayMs": 30000,
+    "orderDelayMs": 120000,
 
     "hft": true,
     "hftChance": 0.9,

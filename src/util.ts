@@ -5,6 +5,8 @@ import {homedir} from "os";
 import {Config, Order} from "./types";
 import {QUANTITY_FACTOR, PRICE_FACTOR} from "./consts";
 import path from "path";
+import axios from "axios";
+
 
 export const getGasUsage = (o: FinalExecutionOutcome) => {
   const receiptGas = o.transaction_outcome.outcome.gas_burnt;
@@ -83,4 +85,17 @@ export const getOrderBookFromConfig = (
   });
 
   return {buy, sell};
+};
+
+export const getPrice = async (tokenId: string) => {
+  const client = axios.create({
+    baseURL: "https://indexer.ref.finance/",
+  });
+  
+  return client.get("get-token-price", {params: {token_id: tokenId}})
+    .then((res) => res.data.price) as unknown as number;
+};
+
+export const getOrderConfig = async () => {
+  return require("../order-config.json");
 };
