@@ -17,8 +17,6 @@ const priceChanged = (
   configOrders: OrderBook,
   priceThreshold: number
 ) => {
-  sortOrderBook(currentOrders);
-
   for (let i = 0; i < currentOrders.buy.length - 1; i++) {
     if (
       Math.abs(1 - currentOrders.buy[i].price / configOrders.buy[i].price) > priceThreshold
@@ -35,8 +33,6 @@ const quantityChanged = (
   configOrders: OrderBook,
   quantityThreshold: number
 ) => {
-  sortOrderBook(currentOrders);
-
   for (let i = 0; i < currentOrders.buy.length - 1; i++) {
     if (
       Math.abs(1 - currentOrders.buy[i].quantity / configOrders.buy[i].quantity) > quantityThreshold
@@ -54,6 +50,8 @@ export const isMakeMarketNeeded = (
   priceThreshold: number,
   quantityThreshold: number
 ) => {
+  sortOrderBook(currentOrders);
+
   if (amountOfOrdersChanged(currentOrders, configOrders)) return true;
   if (priceChanged(currentOrders, configOrders, priceThreshold)) return true;
   if (quantityChanged(currentOrders, configOrders, quantityThreshold)) return true;
