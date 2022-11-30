@@ -8,8 +8,8 @@ const amountOfOrdersChanged = (currentOrders: any, configOrders: any) => {
 };
 
 const sortOrderBook = (orderBook: OrderBook) => {
-  orderBook.buy.sort((a: Order, b: Order) => a.price - b.price);
-  orderBook.sell.sort((a: Order, b: Order) => a.price - b.price);
+  orderBook.buy.sort((a: Order, b: Order) => b.price - a.price);
+  orderBook.sell.sort((a: Order, b: Order) => b.price - a.price);
 }
 
 const priceChanged = (
