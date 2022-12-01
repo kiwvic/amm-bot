@@ -1,7 +1,7 @@
 import {getExplorerBaseUrl} from "@tonic-foundation/config";
 import {FinalExecutionOutcome} from "near-api-js/lib/providers";
 import {Config, Order} from "./types";
-import {QUANTITY_FACTOR, PRICE_FACTOR} from "./consts";
+import {QUANTITY_FACTOR, PRICE_FACTOR, PRICE_CONFIG_FIXED} from "./consts";
 import axios from "axios";
 
 
@@ -61,13 +61,13 @@ export const getOrderBookFromConfig = (
 
   config.bids.forEach(item => {
     const bidQuantity = baseQuantityToken * item.quantity;
-    const bidPrice = indexPrice * (1 + item.spread);
+    const bidPrice = parseFloat((indexPrice * (1 + item.spread)).toFixed(PRICE_CONFIG_FIXED));
     sell.push({ quantity: bidQuantity, price: bidPrice });
   });
 
   config.asks.forEach(item => {
     const totalUSDC = baseQuantityUSDC * item.quantity;
-    const askPrice = indexPrice * (1 - item.spread); // price per token
+    const askPrice = parseFloat((indexPrice * (1 - item.spread)).toFixed(PRICE_CONFIG_FIXED)); // price per token
     const askQuantity = parseFloat((totalUSDC / askPrice).toFixed(1));
 
     buy.push({quantity: askQuantity, price: askPrice});
