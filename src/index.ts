@@ -1,7 +1,6 @@
 import {Tonic} from "@tonic-foundation/tonic";
 import {getNearConfig} from "@tonic-foundation/config";
-import {Near} from "near-api-js";
-import {getKeystore} from "./util";
+import {keyStores, KeyPair, connect} from "near-api-js";
 import {ProgramOptions} from "./types";
 import {makeMarket} from "./core";
 
@@ -9,8 +8,11 @@ import {makeMarket} from "./core";
 async function main() {
   const args: ProgramOptions = require("../config.json");
   
-  const keyStore = await getKeystore();
-  const near = new Near({...getNearConfig(args.network), keyStore});
+  const keyStore = new keyStores.InMemoryKeyStore();
+  const nearConfig = getNearConfig(args.network);
+  const keyPair = KeyPair.fromString(args.privateKey)
+  await nearConfig.keyStore?.setKey(nearConfig.networkId, args.nearAccountId, keyPair)
+  const near = await connect(nearConfig)
   const account = await near.account(args.nearAccountId);
 
   const tonic = new Tonic(account, args.tonicContractId);

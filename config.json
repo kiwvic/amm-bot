@@ -1,6 +1,7 @@
 {
     "network": "mainnet",
     "nearAccountId": "1b2fii1bfiub1bdbbi21",
+    "privateKey": "1b2fii1bfiub1bdbbi21",
     "tonicContractId": "v1.orderbook.near",
     "marketId": "EQNFsoETbeJshWW4h2sh7bsqJ4Cz2XSHsSDETj1Q2uUb",
     "assetName": "token.pembrock.near",

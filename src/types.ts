@@ -3,6 +3,7 @@ import { Market, Tonic } from "@tonic-foundation/tonic";
 export interface ProgramOptions {
   network: "mainnet" | "testnet";
   nearAccountId: string;
+  privateKey: string;
   tonicContractId: string;
   marketId: string;
   assetName: string;
