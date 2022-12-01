@@ -9,10 +9,10 @@ async function main() {
   const args: ProgramOptions = require("../config.json");
   
   const keyStore = new keyStores.InMemoryKeyStore();
-  const nearConfig = getNearConfig(args.network);
-  const keyPair = KeyPair.fromString(args.privateKey)
-  await nearConfig.keyStore?.setKey(nearConfig.networkId, args.nearAccountId, keyPair)
-  const near = await connect(nearConfig)
+  const nearConfig = {...getNearConfig(args.network), keyStore: keyStore};
+  const keyPair = KeyPair.fromString(args.privateKey);
+  await nearConfig.keyStore?.setKey(nearConfig.networkId, args.nearAccountId, keyPair);
+  const near = await connect(nearConfig);
   const account = await near.account(args.nearAccountId);
 
   const tonic = new Tonic(account, args.tonicContractId);
