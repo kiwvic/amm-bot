@@ -1,4 +1,4 @@
-import { Market, Tonic } from "@tonic-foundation/tonic";
+import { Tonic } from "@tonic-foundation/tonic";
 
 export interface ProgramOptions {
   network: "mainnet" | "testnet";

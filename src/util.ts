@@ -9,77 +9,6 @@ import axios from "axios";
 import { BN } from "bn.js";
 
 
-export const getGasUsage = (o: FinalExecutionOutcome) => {
-  const receiptGas = o.transaction_outcome.outcome.gas_burnt;
-  const actionGas = o.receipts_outcome.reduce(
-    (acc, x) => acc + x.outcome.gas_burnt,
-    0
-  );
-  return `${((receiptGas + actionGas) / Math.pow(10, 12)).toFixed(2)} TGas`;
-};
-
-export async function sleep(n: number) {
-  return new Promise((resolve) => setTimeout(resolve, n));
-}
-
-export function getExplorerUrl(
-  network: "mainnet" | "testnet",
-  type: "account" | "transaction",
-  id: string
-) {
-  const baseUrl = getExplorerBaseUrl(network);
-  if (type === "account") return `${baseUrl}/address/${id}`
-  if (type === "transaction") return `${baseUrl}/txns/${id}`;
-  throw new Error("Invalid resource type");
-}
-
-export const openOrdersToOrderBook = (openOrders: any) => {
-  let sell = [];
-  let buy = [];
-
-  for (let order of openOrders) {
-    if (order.side === "Sell") {
-      sell.push({
-        quantity: order.remainingQuantity / QUANTITY_FACTOR,
-        price: order.limitPrice / PRICE_FACTOR,
-      });
-    } else if (order.side === "Buy") {
-      buy.push({
-        quantity: order.remainingQuantity / QUANTITY_FACTOR,
-        price: order.limitPrice / PRICE_FACTOR,
-      });
-    }
-  }
-
-  return {sell, buy};
-};
-
-export const getOrderBookFromConfig = (
-  config: Config,
-  indexPrice: number,
-  baseQuantityToken: number,
-  baseQuantityUSDC: number
-) => {
-  let buy: Order[] = [];
-  let sell: Order[] = [];
-
-  config.bids.forEach(item => {
-    const bidQuantity = baseQuantityToken * item.quantity;
-    const bidPrice = parseFloat((indexPrice * (1 + item.spread)).toFixed(PRICE_CONFIG_FIXED));
-    sell.push({ quantity: bidQuantity, price: bidPrice });
-  });
-
-  config.asks.forEach(item => {
-    const totalUSDC = baseQuantityUSDC * item.quantity;
-    const askPrice = parseFloat((indexPrice * (1 - item.spread)).toFixed(PRICE_CONFIG_FIXED)); // price per token
-    const askQuantity = parseFloat((totalUSDC / askPrice).toFixed(1));
-
-    buy.push({quantity: askQuantity, price: askPrice});
-  });
-
-  return {buy, sell};
-};
-
 export const getPrice = async (tokenId: string) => {
   const client = axios.create({
     baseURL: "https://indexer.ref.finance/",
@@ -114,6 +43,86 @@ export const getOrderType = (type_: number) => {
   if (type_ == Buy) return "Buy";
   return "Sell";
 }
+
+export async function sleep(n: number) {
+  return new Promise((resolve) => setTimeout(resolve, n));
+}
+
+const relDiff = (a: any, b: any) => {
+  return 100*((a-b)/((a+b)/2));
+}
+
+
+export const getGasUsage = (o: FinalExecutionOutcome) => {
+  const receiptGas = o.transaction_outcome.outcome.gas_burnt;
+  const actionGas = o.receipts_outcome.reduce(
+    (acc, x) => acc + x.outcome.gas_burnt,
+    0
+  );
+  return `${((receiptGas + actionGas) / Math.pow(10, 12)).toFixed(2)} TGas`;
+};
+
+
+export function getExplorerUrl(
+  network: "mainnet" | "testnet",
+  type: "account" | "transaction",
+  id: string
+) {
+  const baseUrl = getExplorerBaseUrl(network);
+  if (type === "account") return `${baseUrl}/address/${id}`
+  if (type === "transaction") return `${baseUrl}/txns/${id}`;
+  throw new Error("Invalid resource type");
+}
+
+
+export const openOrdersToOrderBook = (openOrders: any) => {
+  let sell = [];
+  let buy = [];
+
+  for (let order of openOrders) {
+    if (order.side === "Sell") {
+      sell.push({
+        quantity: order.remainingQuantity / QUANTITY_FACTOR,
+        price: order.limitPrice / PRICE_FACTOR,
+      });
+    } else if (order.side === "Buy") {
+      buy.push({
+        quantity: order.remainingQuantity / QUANTITY_FACTOR,
+        price: order.limitPrice / PRICE_FACTOR,
+      });
+    }
+  }
+
+  return {sell, buy};
+};
+
+
+export const getOrderBookFromConfig = (
+  config: Config,
+  indexPrice: number,
+  baseQuantityToken: number,
+  baseQuantityUSDC: number
+) => {
+  let buy: Order[] = [];
+  let sell: Order[] = [];
+
+  config.bids.forEach(item => {
+    const bidQuantity = baseQuantityToken * item.quantity;
+    const bidPrice = parseFloat((indexPrice * (1 + item.spread)).toFixed(PRICE_CONFIG_FIXED));
+    sell.push({ quantity: bidQuantity, price: bidPrice });
+  });
+
+  config.asks.forEach(item => {
+    const totalUSDC = baseQuantityUSDC * item.quantity;
+    const askPrice = parseFloat((indexPrice * (1 - item.spread)).toFixed(PRICE_CONFIG_FIXED)); // price per token
+    const askQuantity = parseFloat((totalUSDC / askPrice).toFixed(1));
+
+    buy.push({quantity: askQuantity, price: askPrice});
+  });
+
+  return {buy, sell};
+};
+
 
 export const getTonic = async (
     network: "mainnet" | "testnet", 
@@ -163,6 +172,7 @@ export const calculateBestPrice = (orderType: number, bestBid: number, bestAsk: 
   return toFixedNoRound(price, PRICE_CONFIG_FIXED);
 }
 
+
 export const orderTypeChangeIsNeeded = (orderType: number, orderTypeStreak: OrderTypeStreak) => {
   const config = getProgramConfig()
 
@@ -177,10 +187,6 @@ export const orderTypeChangeIsNeeded = (orderType: number, orderTypeStreak: Orde
   }
 
   return false;
-}
-
-const relDiff = (a: any, b: any) => {
-  return 100*((a-b)/((a+b)/2));
 }
 
 

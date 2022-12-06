@@ -1,21 +1,21 @@
+import { getOrderConfig, getPrice, getProgramConfig, getRandomArbitrary } from "./util";
+import { MandatoryHFTIter, MarketMakerParams, OrderTypeStreak } from "./types";
 import { Tonic, Market } from "@tonic-foundation/tonic";
 import { isMakeMarketNeeded } from "./checks";
-import { MandatoryHFTIter, MarketMakerParams, OrderTypeStreak } from "./types";
+import { Buy, Sell } from "./consts"
+import BN from "bn.js";
 import {
-  getExplorerUrl,
-  getGasUsage,
-  sleep,
+  orderTypeChangeIsNeeded,
   openOrdersToOrderBook,
   getOrderBookFromConfig,
-  getBestPrice,
   calculateBestPrice,
-  orderTypeChangeIsNeeded,
+  changeIndexPrice,
+  getExplorerUrl,
+  getBestPrice,
   getOrderType,
-  changeIndexPrice
+  getGasUsage,
+  sleep,
 } from "./util";
-import {Buy, Sell} from "./consts"
-import { getOrderConfig, getPrice, getProgramConfig, getRandomArbitrary } from "./util";
-import BN from "bn.js";
 
 
 function createBatch(market: any, configOrders: { buy: any[]; sell: any[] }) {
@@ -43,6 +43,7 @@ function createBatch(market: any, configOrders: { buy: any[]; sell: any[] }) {
 
   return batch;
 }
+
 
 async function makeHFT(
     tonic: Tonic, tonicHFT: Tonic, 
@@ -129,6 +130,7 @@ async function makeHFT(
   return randomSleepTimeMs;
 }
 
+
 export async function makeMarket(params: MarketMakerParams) {
   const {
     tonic,
@@ -151,10 +153,9 @@ export async function makeMarket(params: MarketMakerParams) {
   let indexPrice = await getPrice(assetName);
 
   while (true) {
-    let randomSleepTimeMs = 0;
-
     const config = await getOrderConfig();
 
+    let randomSleepTimeMs = 0;
     let newPrice;
     try {
         newPrice = await getPrice(assetName);
@@ -162,8 +163,8 @@ export async function makeMarket(params: MarketMakerParams) {
         await sleep(orderDelayMs);
         continue;
     }
-
     indexPrice = changeIndexPrice(indexPrice, newPrice);
+
     const currentOrders = openOrdersToOrderBook(await tonic.getOpenOrders(market.id));
     const configOrders = getOrderBookFromConfig(config, indexPrice, baseQuantity, quoteQuantity);
 
