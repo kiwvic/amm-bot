@@ -178,3 +178,22 @@ export const orderTypeChangeIsNeeded = (orderType: number, orderTypeStreak: Orde
 
   return false;
 }
+
+const relDiff = (a: any, b: any) => {
+  return 100*((a-b)/((a+b)/2));
+}
+
+
+export const changeIndexPrice = (price: number, newPrice: number) => { 
+  const config = getProgramConfig()
+
+  let priceDiff = relDiff(newPrice, price);
+
+  if (priceDiff > 0 && priceDiff > config.priceChangeThresholdPercent) {
+    price += (price * (config.priceChangeThresholdPercent / 100));
+  } else if (priceDiff < 0 && priceDiff < (-1) * config.priceChangeThresholdPercent) {
+    price -= (price * (config.priceChangeThresholdPercent / 100));
+  }
+
+  return price;
+}

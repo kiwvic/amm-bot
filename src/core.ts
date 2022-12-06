@@ -10,7 +10,8 @@ import {
   getBestPrice,
   calculateBestPrice,
   orderTypeChangeIsNeeded,
-  getOrderType
+  getOrderType,
+  changeIndexPrice
 } from "./util";
 import {Buy, Sell} from "./consts"
 import { getOrderConfig, getPrice, getProgramConfig, getRandomArbitrary } from "./util";
@@ -147,13 +148,22 @@ export async function makeMarket(params: MarketMakerParams) {
 
   let mandatoryHftIter: MandatoryHFTIter = {counter: 0, appeared: false};
   let orderTypeStreak: OrderTypeStreak = {counter: 0, type: 0};
+  let indexPrice = await getPrice(assetName);
 
   while (true) {
     let randomSleepTimeMs = 0;
 
     const config = await getOrderConfig();
 
-    const indexPrice = await getPrice(assetName);
+    let newPrice;
+    try {
+        newPrice = await getPrice(assetName);
+    } catch(e: any) {
+        await sleep(orderDelayMs);
+        continue;
+    }
+
+    indexPrice = changeIndexPrice(indexPrice, newPrice);
     const currentOrders = openOrdersToOrderBook(await tonic.getOpenOrders(market.id));
     const configOrders = getOrderBookFromConfig(config, indexPrice, baseQuantity, quoteQuantity);
 
