@@ -120,18 +120,26 @@ async function makeHFT(
       randomAmount += 100;
   }
 
-  await market.placeOrder({
+  const {response} = await market.placeOrder({
     quantity: randomAmount, 
     side: getOrderType(orderType == Buy ? Sell : Buy),
     limitPrice: price,
     orderType: "Limit"
   });
-  await marketHFT.placeOrder({
+
+  const {response: responseHFT} = await marketHFT.placeOrder({
     quantity: randomAmount, 
     side: getOrderType(orderType),
     limitPrice: price,
     orderType: "Limit"
   });
+
+  try {
+    await tonic.cancelOrder(market.id, response.id);
+  } catch (e) {}
+  try {
+    await tonicHFT.cancelOrder(market.id, responseHFT.id);
+  } catch(e) {}
 
   return randomSleepTimeMs;
 }
