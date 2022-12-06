@@ -1,20 +1,28 @@
 {
     "network": "mainnet",
-    "nearAccountId": "1b2fii1bfiub1bdbbi21",
-    "privateKey": "1b2fii1bfiub1bdbbi21",
+
+    "nearAccountId": "abc",
+    "privateKey": "abc",
+    
+    "nearAccountIdHFT": "abc",
+    "privateKeyHFT": "abc",
+
+    "baseName": "token.pembrock.near",
+    "quoteName": "a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48.factory.bridge.near",
+
     "tonicContractId": "v1.orderbook.near",
-    "marketId": "EQNFsoETbeJshWW4h2sh7bsqJ4Cz2XSHsSDETj1Q2uUb",
+    "marketId": "8SjBBxHuUrtqghhEXRWLyxgPyLtk3MC1Z4mvLFVcnFbT",
     "assetName": "token.pembrock.near",
-    "baseQuantity": 29624,
+    "baseQuantity": 7000,
     "quoteQuantity": 1356,
     "orderDelayMs": 120000,
 
     "hft": true,
     "hftChance": 0.9,
-    "orderPricePercentHft": 1,
+    "orderPricePercentHft": 3,
     "randomTokenMin": 100,
     "randomTokenMax": 300,
-    "mandatoryIterationRecharge": 2,
+    "mandatoryIterationRecharge": 1,
     "sameOrderStreak": 3,
     "priceChangeThresholdPercent": 1
 }

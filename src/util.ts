@@ -1,8 +1,12 @@
 import {getExplorerBaseUrl} from "@tonic-foundation/config";
 import {FinalExecutionOutcome} from "near-api-js/lib/providers";
-import {Config, Order} from "./types";
-import {QUANTITY_FACTOR, PRICE_FACTOR, PRICE_CONFIG_FIXED} from "./consts";
+import {Config, Order, OrderTypeStreak} from "./types";
+import {QUANTITY_FACTOR, PRICE_FACTOR, PRICE_CONFIG_FIXED, Buy, Sell} from "./consts";
+import {OpenLimitOrder, Tonic} from "@tonic-foundation/tonic";
+import {getNearConfig} from "@tonic-foundation/config";
+import {keyStores, KeyPair, connect} from "near-api-js";
 import axios from "axios";
+import { BN } from "bn.js";
 
 
 export const getGasUsage = (o: FinalExecutionOutcome) => {
@@ -85,6 +89,92 @@ export const getPrice = async (tokenId: string) => {
     .then((res) => res.data.price) as unknown as number;
 };
 
-export const getOrderConfig = async () => {
+export const getOrderConfig = () => {
   return require("../order-config.json");
 };
+
+export const getProgramConfig = () => {
+  return require("../config.json");
+};
+
+export const getRandomArbitrary = (min: number, max: number) => {
+  return Math.round(Math.random() * (max - min) + min);
+}
+
+export const getRandomDecimal = (min: number, max: number) => {
+  return Math.random() * (max - min) + min;
+}
+
+export const toFixedNoRound = (number: number, precision: number): number => {
+  const factor = Math.pow(10, precision);
+  return Math.floor(number * factor) / factor;
+}
+
+export const getOrderType = (type_: number) => {
+  if (type_ == Buy) return "Buy";
+  return "Sell";
+}
+
+export const getTonic = async (
+    network: "mainnet" | "testnet", 
+    accountId: string, privateKey: string, 
+    contractId: string
+  ) => {
+  const keyStore = new keyStores.InMemoryKeyStore();
+  const nearConfig = {...getNearConfig(network), keyStore: keyStore};
+  const keyPair = KeyPair.fromString(privateKey);
+  await nearConfig.keyStore?.setKey(nearConfig.networkId, accountId, keyPair);
+  const near = await connect(nearConfig);
+  const account = await near.account(accountId);
+
+  return new Tonic(account, contractId);
+}
+
+export const getBestPrice = (orders: OpenLimitOrder[]) => {
+  let bestAsk = {limitPrice: new BN("0")};
+  let bestBid = {limitPrice: new BN("1000000000")};
+
+  for (let order of orders) {
+    if (order.side == "Buy" && order.limitPrice.gt(bestAsk.limitPrice)) {
+      bestAsk = order;
+    } else if (order.side == "Sell" && order.limitPrice.lt(bestBid.limitPrice)) {
+      bestBid = order;
+    }
+  }
+
+  return {
+    bestAskPrice: bestAsk.limitPrice.toNumber() / PRICE_FACTOR, 
+    bestBidPrice: bestBid.limitPrice.toNumber() / PRICE_FACTOR
+  };
+}
+
+export const calculateBestPrice = (orderType: number, bestBid: number, bestAsk: number) => {
+  const config = getProgramConfig()
+
+  // TODO
+  let price = orderType == Buy ? bestAsk : bestBid;
+
+  if (orderType == Sell) {
+      price -= price * (getRandomDecimal(0, config.orderPricePercentHft) / 100);
+  } else {
+      price += price * (getRandomDecimal(0, config.orderPricePercentHft) / 100);
+  }
+
+  return toFixedNoRound(price, PRICE_CONFIG_FIXED);
+}
+
+export const orderTypeChangeIsNeeded = (orderType: number, orderTypeStreak: OrderTypeStreak) => {
+  const config = getProgramConfig()
+
+  if (orderTypeStreak.type == orderType && orderTypeStreak.counter >= config.sameOrderStreak) {
+    orderTypeStreak.counter = 0;
+    return true;
+  } else if (orderTypeStreak.type != orderType || orderTypeStreak.counter >= config.sameOrderStreak) {
+    orderTypeStreak.type = orderType;
+    orderTypeStreak.counter = 0;
+  } else {
+    orderTypeStreak.counter += 1;
+  }
+
+  return false;
+}

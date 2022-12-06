@@ -2,8 +2,16 @@ import { Market, Tonic } from "@tonic-foundation/tonic";
 
 export interface ProgramOptions {
   network: "mainnet" | "testnet";
+
   nearAccountId: string;
   privateKey: string;
+
+  nearAccountIdHFT: string;
+  privateKeyHFT: string;
+
+  baseName: string;
+  quoteName: string;
+
   tonicContractId: string;
   marketId: string;
   assetName: string;
@@ -23,8 +31,11 @@ export interface ProgramOptions {
 
 export interface MarketMakerParams {
   tonic: Tonic;
-  market: Market;
+  tonicHFT: Tonic;
+  marketId: string;
   assetName: string;
+  baseName: string;
+  quoteName: string;
   baseQuantity: number;
   quoteQuantity: number;
   orderDelayMs: number;
@@ -51,4 +62,14 @@ export interface Order {
 export interface OrderBook {
   buy: Array<Order>;
   sell: Array<Order>;
+}
+
+export interface MandatoryHFTIter {
+  counter: number,
+  appeared: boolean
+}
+
+export interface OrderTypeStreak {
+  counter: number,
+  type: number
 }
