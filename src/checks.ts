@@ -1,4 +1,6 @@
 import { OrderBook, Order } from "./types";
+import BN from "bn.js";
+
 
 const amountOfOrdersChanged = (currentOrders: any, configOrders: any) => {
   return (
@@ -60,3 +62,7 @@ export const isMakeMarketNeeded = (
   
   return false;
 };
+
+export const notEnoughFunds = (baseAvailable: BN, quoteAvailable: BN, amount: number, price: number) => {
+  return quoteAvailable.lt(new BN(amount * price)) && baseAvailable.lt(new BN(amount));
+}

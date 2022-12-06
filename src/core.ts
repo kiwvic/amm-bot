@@ -1,7 +1,7 @@
 import { getOrderConfig, getPrice, getProgramConfig, getRandomArbitrary } from "./util";
 import { MandatoryHFTIter, MarketMakerParams, OrderTypeStreak } from "./types";
 import { Tonic, Market } from "@tonic-foundation/tonic";
-import { isMakeMarketNeeded } from "./checks";
+import { isMakeMarketNeeded, notEnoughFunds } from "./checks";
 import { Buy, Sell } from "./consts"
 import BN from "bn.js";
 import {
@@ -88,12 +88,18 @@ async function makeHFT(
 
   let price = calculateBestPrice(orderType, bestBidPrice, bestAskPrice);
 
-  // TODO check funds
   const baseAvailable = balances[baseName];
   const quoteAvailable = balances[quoteName];
   const baseHFTAvailable = balancesHFT[baseName];
   const quoteHFTAvailable = balancesHFT[quoteName];
-  
+
+  if (
+    notEnoughFunds(baseAvailable, quoteAvailable, randomAmount, price) && 
+    notEnoughFunds(baseHFTAvailable, quoteHFTAvailable, randomAmount, price)
+    ) {
+    return randomSleepTimeMs;
+  }
+
   let forceChangeOrderType = false;
   if (orderType == Buy) {
       if (quoteHFTAvailable.lt(new BN(randomAmount * price)) || baseAvailable.lt(new BN(randomAmount))) {

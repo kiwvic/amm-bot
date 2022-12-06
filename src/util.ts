@@ -6,7 +6,7 @@ import {OpenLimitOrder, Tonic} from "@tonic-foundation/tonic";
 import {getNearConfig} from "@tonic-foundation/config";
 import {keyStores, KeyPair, connect} from "near-api-js";
 import axios from "axios";
-import { BN } from "bn.js";
+import BN from "bn.js";
 
 
 export const getPrice = async (tokenId: string) => {
