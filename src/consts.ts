@@ -6,5 +6,7 @@ export const PRICE_FACTOR = Math.pow(10, PRICE_DECIMALS);
 
 export const PRICE_CONFIG_FIXED = 4;
 
+export const LOGFILE = "../fxdx.log";
+
 export const Sell = 0;
 export const Buy = 1;

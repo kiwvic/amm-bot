@@ -15,6 +15,7 @@ import {
   getOrderType,
   getGasUsage,
   sleep,
+  log
 } from "./util";
 
 
@@ -51,6 +52,7 @@ async function makeHFT(
     baseName: string, quoteName: string,
     mandatoryHftIter: MandatoryHFTIter, orderTypeStreak: OrderTypeStreak
   ) {
+  log("makeHFT start");
   const config = getProgramConfig();
 
   if (!config.hft) return 0;
@@ -59,19 +61,19 @@ async function makeHFT(
   const skip = Math.random() > config.hftChance;
 
   if (!mandatoryHftIter.appeared && mandatoryHftIter.counter >= config.mandatoryIterationRecharge) {
-    console.log("!mandatoryHftIter.appeared && mandatoryHftIter.counter >= MANDATORY_ITERATION_RECHARGE");
+    log("!mandatoryHftIter.appeared && mandatoryHftIter.counter >= MANDATORY_ITERATION_RECHARGE");
     mandatoryHftIter.counter = 0;
   } else if (mandatoryHftIter.appeared && mandatoryHftIter.counter >= config.mandatoryIterationRecharge) {
-      console.log("mandatoryHftIter.appeared && mandatoryHftIter.counter >= MANDATORY_ITERATION_RECHARGE");
+      log("mandatoryHftIter.appeared && mandatoryHftIter.counter >= MANDATORY_ITERATION_RECHARGE");
       mandatoryHftIter.counter = 0;
       mandatoryHftIter.appeared = false;
       return randomSleepTimeMs;
   } else if (mandatoryHftIter.appeared) {
-      console.log("mandatoryHftIter.appeared");
+      log("mandatoryHftIter.appeared");
       mandatoryHftIter.counter += 1;
       return randomSleepTimeMs;
   } else if (skip) {
-      console.log("skip");
+      log("skip");
       mandatoryHftIter.counter += 1;
       return randomSleepTimeMs;
   } 
@@ -83,11 +85,13 @@ async function makeHFT(
 
   const balances = await tonic.getBalances();
   const balancesHFT = await tonicHFT.getBalances();
+  log(`balances: ${balances}`);
+  log(`balancesHFT: ${balancesHFT}`);
   
   const { bestAskPrice, bestBidPrice } = getBestPrice(await tonic.getOpenOrders(market.id))
-
+  log(`best: ${bestAskPrice}, ${bestBidPrice}`);
   let price = calculateBestPrice(orderType, bestBidPrice, bestAskPrice);
-
+  log(`price: ${price}`);
   const baseAvailable = balances[baseName];
   const quoteAvailable = balances[quoteName];
   const baseHFTAvailable = balancesHFT[baseName];
@@ -99,7 +103,7 @@ async function makeHFT(
     ) {
     return randomSleepTimeMs;
   }
-
+  log(`1`);
   let forceChangeOrderType = false;
   if (orderType == Buy) {
       if (quoteHFTAvailable.lt(new BN(randomAmount * price)) || baseAvailable.lt(new BN(randomAmount))) {
@@ -114,33 +118,33 @@ async function makeHFT(
           forceChangeOrderType = true;
       }
   }
-
+  log(`2`);
   if (orderTypeChangeIsNeeded(orderType, orderTypeStreak) && !forceChangeOrderType) {
       orderType = orderType == Buy ? Sell : Buy;
       randomAmount += 100;
   }
-
+  log(`3`);
   const {response} = await market.placeOrder({
     quantity: randomAmount, 
     side: getOrderType(orderType == Buy ? Sell : Buy),
     limitPrice: price,
     orderType: "Limit"
   });
-
+  log(`4`);
   const {response: responseHFT} = await marketHFT.placeOrder({
     quantity: randomAmount, 
     side: getOrderType(orderType),
     limitPrice: price,
     orderType: "Limit"
   });
-
+  log(`5`);
   try {
     await tonic.cancelOrder(market.id, response.id);
   } catch (e) {}
   try {
     await tonicHFT.cancelOrder(market.id, responseHFT.id);
   } catch(e) {}
-
+  log("makeHFT end")  
   return randomSleepTimeMs;
 }
 
@@ -167,6 +171,7 @@ export async function makeMarket(params: MarketMakerParams) {
   let indexPrice = await getPrice(assetName);
 
   while (true) {
+    log("start");
     const config = await getOrderConfig();
 
     let randomSleepTimeMs = 0;
@@ -174,13 +179,19 @@ export async function makeMarket(params: MarketMakerParams) {
     try {
         newPrice = await getPrice(assetName);
     } catch(e: any) {
+        log("getPRice err");
         await sleep(orderDelayMs);
         continue;
     }
+    log(`newPrice: ${newPrice}`);
     indexPrice = changeIndexPrice(indexPrice, newPrice);
+    log(`indexPrice: ${indexPrice}`);
 
+    log("before currentOrders")
     const currentOrders = openOrdersToOrderBook(await tonic.getOpenOrders(market.id));
+    log("after currentOrders")
     const configOrders = getOrderBookFromConfig(config, indexPrice, baseQuantity, quoteQuantity);
+    log("after configOrders")
 
     if (currentOrders.buy.length > 0) {
       randomSleepTimeMs = await makeHFT(tonic, tonicHFT, market, marketHFT, baseName, quoteName, mandatoryHftIter, orderTypeStreak);
@@ -195,10 +206,12 @@ export async function makeMarket(params: MarketMakerParams) {
         console.log("Transaction", getExplorerUrl(network, "transaction", tx.transaction_outcome.id));
         console.log(`Gas usage: ${getGasUsage(tx)}`);
       } catch (e) {
+        log("fail order");
         console.log("Order failed", e);
       }
     }
 
+    log("end");
     console.log(`Waiting ${orderDelayMs}ms`);
     await sleep(orderDelayMs - randomSleepTimeMs);
   }

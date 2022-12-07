@@ -1,10 +1,12 @@
+import { readFileSync, writeFileSync, promises as fsPromises, appendFileSync } from 'fs';
+import {QUANTITY_FACTOR, PRICE_FACTOR, PRICE_CONFIG_FIXED, Buy, Sell, LOGFILE} from "./consts";
 import {getExplorerBaseUrl} from "@tonic-foundation/config";
 import {FinalExecutionOutcome} from "near-api-js/lib/providers";
 import {Config, Order, OrderTypeStreak} from "./types";
-import {QUANTITY_FACTOR, PRICE_FACTOR, PRICE_CONFIG_FIXED, Buy, Sell} from "./consts";
 import {OpenLimitOrder, Tonic} from "@tonic-foundation/tonic";
 import {getNearConfig} from "@tonic-foundation/config";
 import {keyStores, KeyPair, connect} from "near-api-js";
+import { join } from 'path';
 import axios from "axios";
 import BN from "bn.js";
 
@@ -202,4 +204,11 @@ export const changeIndexPrice = (price: number, newPrice: number) => {
   }
 
   return price;
+}
+
+export function log(data: any) {
+  appendFileSync(
+    join(__dirname, LOGFILE), 
+    `[${(new Date()).toLocaleString()}] ${data}\n`
+  );
 }
