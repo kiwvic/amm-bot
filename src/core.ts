@@ -124,25 +124,44 @@ async function makeHFT(
       randomAmount += 100;
   }
   log(`3`);
-  const {response} = await market.placeOrder({
-    quantity: randomAmount, 
-    side: getOrderType(orderType == Buy ? Sell : Buy),
-    limitPrice: price,
-    orderType: "Limit"
-  });
-  log(`4`);
-  const {response: responseHFT} = await marketHFT.placeOrder({
-    quantity: randomAmount, 
-    side: getOrderType(orderType),
-    limitPrice: price,
-    orderType: "Limit"
-  });
+
+  // TODO 
+  let response;
+  let responseHFT;
+  try {
+    const {response: reponse_} = await market.placeOrder({
+      quantity: randomAmount, 
+      side: getOrderType(orderType == Buy ? Sell : Buy),
+      limitPrice: price,
+      orderType: "Limit"
+    });
+    response = reponse_;
+  } catch(e: any) {
+    log(e.message);  
+  }
+  
+  try {
+    const {response: responseHFT_} = await marketHFT.placeOrder({
+      quantity: randomAmount, 
+      side: getOrderType(orderType),
+      limitPrice: price,
+      orderType: "Limit"
+    });
+    responseHFT = responseHFT_;
+  } catch(e: any) {
+    log(e.message);  
+  }
+
   log(`5`);
   try {
-    await tonic.cancelOrder(market.id, response.id);
+    if (response !== undefined) {
+      await tonic.cancelOrder(market.id, response.id);
+    }
   } catch (e) {}
   try {
-    await tonicHFT.cancelOrder(market.id, responseHFT.id);
+    if (responseHFT !== undefined) {
+      await tonicHFT.cancelOrder(market.id, responseHFT.id);
+    }
   } catch(e) {}
   log("makeHFT end")  
   return randomSleepTimeMs;
