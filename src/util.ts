@@ -157,19 +157,16 @@ export const getBestPrice = (orders: OpenLimitOrder[]) => {
   };
 }
 
-export const calculateBestPrice = (orderType: number, bestBid: number, bestAsk: number) => {
-  const config = getProgramConfig()
+export const calculateBestPrice = (bestBid: number, bestAsk: number) => {
+  let randomDecimal = toFixedNoRound(getRandomDecimal(bestAsk, bestBid), PRICE_CONFIG_FIXED);
 
-  // TODO
-  let price = orderType == Buy ? bestAsk : bestBid;
-
-  if (orderType == Sell) {
-      price -= price * (getRandomDecimal(0, config.orderPricePercentHft) / 100);
-  } else {
-      price += price * (getRandomDecimal(0, config.orderPricePercentHft) / 100);
+  if (randomDecimal == bestAsk) {
+    randomDecimal -= Math.pow(10, -PRICE_CONFIG_FIXED);
+  } else if (randomDecimal == bestBid) {
+    randomDecimal += Math.pow(10, -PRICE_CONFIG_FIXED);
   }
 
-  return toFixedNoRound(price, PRICE_CONFIG_FIXED);
+  return toFixedNoRound(randomDecimal, PRICE_CONFIG_FIXED);
 }
 
 

@@ -86,7 +86,7 @@ async function makeHFT(
   
   const { bestAskPrice, bestBidPrice } = getBestPrice(await tonic.getOpenOrders(market.id))
 
-  let price = calculateBestPrice(orderType, bestBidPrice, bestAskPrice);
+  let price = calculateBestPrice(bestBidPrice, bestAskPrice);
 
   const baseAvailable = balances[baseName];
   const quoteAvailable = balances[quoteName];
@@ -104,13 +104,11 @@ async function makeHFT(
   if (orderType == Buy) {
       if (quoteHFTAvailable.lt(new BN(randomAmount * price)) || baseAvailable.lt(new BN(randomAmount))) {
           orderType = orderType == Buy ? Sell : Buy;
-          price = calculateBestPrice(orderType, bestBidPrice, bestAskPrice);
           forceChangeOrderType = true;
       }
   } else {
       if (baseHFTAvailable.lt(new BN(randomAmount)) || quoteAvailable.lt(new BN(randomAmount * price))) {
           orderType = orderType == Buy ? Sell : Buy;
-          price = calculateBestPrice(orderType, bestBidPrice, bestAskPrice);
           forceChangeOrderType = true;
       }
   }
