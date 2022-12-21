@@ -1,4 +1,4 @@
-import { OrderBook, Order } from "./types";
+import { OrderBook, Order, Balance } from "./types";
 import BN from "bn.js";
 
 
@@ -63,6 +63,6 @@ export const isMakeMarketNeeded = (
   return false;
 };
 
-export const notEnoughFunds = (baseAvailable: BN, quoteAvailable: BN, amount: number, price: number) => {
-  return quoteAvailable.lt(new BN(amount * price)) && baseAvailable.lt(new BN(amount));
+export const notEnoughFunds = (balance: Balance, amount: number, price: number) => {
+  return balance.quoteAvailable.lt(new BN(amount * price)) && balance.baseAvailable.lt(new BN(amount));
 }

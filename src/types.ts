@@ -1,4 +1,6 @@
-import { Tonic } from "@tonic-foundation/tonic";
+import { Tonic, ExchangeBalances } from "@tonic-foundation/tonic";
+import { getProgramConfig } from "./util";
+import BN from "bn.js"
 
 export interface ProgramOptions {
   network: "mainnet" | "testnet";
@@ -72,4 +74,18 @@ export interface MandatoryHFTIter {
 export interface OrderTypeStreak {
   counter: number,
   type: number
+}
+
+export class Balance {
+  deposits: ExchangeBalances;
+  baseAvailable: BN;
+  quoteAvailable: BN;
+
+  constructor(deposits: ExchangeBalances) {  
+    const config = getProgramConfig();
+
+    this.deposits = deposits;
+    this.baseAvailable = deposits[config.baseName];
+    this.quoteAvailable = deposits[config.quoteName];
+  }
 }

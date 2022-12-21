@@ -1,5 +1,5 @@
 import { getOrderConfig, getPrice, getProgramConfig, getRandomArbitrary } from "./util";
-import { MandatoryHFTIter, MarketMakerParams, OrderTypeStreak } from "./types";
+import { Balance, MandatoryHFTIter, MarketMakerParams, OrderTypeStreak } from "./types";
 import { Tonic, Market } from "@tonic-foundation/tonic";
 import { isMakeMarketNeeded, notEnoughFunds } from "./checks";
 import { Buy, Sell } from "./consts"
@@ -44,78 +44,74 @@ function createBatch(market: any, configOrders: { buy: any[]; sell: any[] }) {
   return batch;
 }
 
+function skipHFT(mandatoryHftIter: MandatoryHFTIter) {
+  const config = getProgramConfig()
 
-async function makeHFT(
-    tonic: Tonic, tonicHFT: Tonic, 
-    market: Market, marketHFT: Market, 
-    baseName: string, quoteName: string,
-    mandatoryHftIter: MandatoryHFTIter, orderTypeStreak: OrderTypeStreak
-  ) {
-  const config = getProgramConfig();
-
-  if (!config.hft) return 0;
-  
-  let randomSleepTimeMs = 0;
   const skip = Math.random() > config.hftChance;
 
   if (!mandatoryHftIter.appeared && mandatoryHftIter.counter >= config.mandatoryIterationRecharge) {
-    console.log("!mandatoryHftIter.appeared && mandatoryHftIter.counter >= MANDATORY_ITERATION_RECHARGE");
     mandatoryHftIter.counter = 0;
   } else if (mandatoryHftIter.appeared && mandatoryHftIter.counter >= config.mandatoryIterationRecharge) {
-      console.log("mandatoryHftIter.appeared && mandatoryHftIter.counter >= MANDATORY_ITERATION_RECHARGE");
-      mandatoryHftIter.counter = 0;
-      mandatoryHftIter.appeared = false;
-      return randomSleepTimeMs;
-  } else if (mandatoryHftIter.appeared) {
-      console.log("mandatoryHftIter.appeared");
-      mandatoryHftIter.counter += 1;
-      return randomSleepTimeMs;
-  } else if (skip) {
-      console.log("skip");
-      mandatoryHftIter.counter += 1;
-      return randomSleepTimeMs;
+    mandatoryHftIter.counter = 0;
+    mandatoryHftIter.appeared = false;
+    return true;
+  } else if (mandatoryHftIter.appeared || skip) {
+    mandatoryHftIter.counter += 1;
+    return true;
   } 
   mandatoryHftIter.appeared = true;
   mandatoryHftIter.counter += 1;
 
+  return false;
+}
+
+async function makeHFT(
+    tonic: Tonic, tonicHFT: Tonic, 
+    market: Market, marketHFT: Market, 
+    mandatoryHftIter: MandatoryHFTIter, orderTypeStreak: OrderTypeStreak
+  ) {
+  const config = getProgramConfig();
+  let randomSleepTimeMs = 0;
+
+  if (!config.hft) return randomSleepTimeMs;
+  if (skipHFT(mandatoryHftIter)) return randomSleepTimeMs;
+
   let randomAmount = getRandomArbitrary(config.randomTokenMin, config.randomTokenMax);
   let orderType = getRandomArbitrary(1, 2) - 1;
-
-  const balances = await tonic.getBalances();
-  const balancesHFT = await tonicHFT.getBalances();
   
   const { bestAskPrice, bestBidPrice } = getBestPrice(await tonic.getOpenOrders(market.id))
-
   let price = calculateBestPrice(bestBidPrice, bestAskPrice);
 
-  const baseAvailable = balances[baseName];
-  const quoteAvailable = balances[quoteName];
-  const baseHFTAvailable = balancesHFT[baseName];
-  const quoteHFTAvailable = balancesHFT[quoteName];
+  const balance = new Balance(await tonic.getBalances());
+  const balanceHFT = new Balance(await tonicHFT.getBalances());
 
   if (
-    notEnoughFunds(baseAvailable, quoteAvailable, randomAmount, price) && 
-    notEnoughFunds(baseHFTAvailable, quoteHFTAvailable, randomAmount, price)
+    notEnoughFunds(balance, randomAmount, price) && 
+    notEnoughFunds(balanceHFT, randomAmount, price)
     ) {
     return randomSleepTimeMs;
   }
 
   let forceChangeOrderType = false;
   if (orderType == Buy) {
-      if (quoteHFTAvailable.lt(new BN(randomAmount * price)) || baseAvailable.lt(new BN(randomAmount))) {
-          orderType = orderType == Buy ? Sell : Buy;
-          forceChangeOrderType = true;
-      }
+    if (
+      balanceHFT.quoteAvailable.lt(new BN(randomAmount * price)) || 
+      balance.baseAvailable.lt(new BN(randomAmount))) {
+        orderType = orderType == Buy ? Sell : Buy;
+        forceChangeOrderType = true;
+    }
   } else {
-      if (baseHFTAvailable.lt(new BN(randomAmount)) || quoteAvailable.lt(new BN(randomAmount * price))) {
-          orderType = orderType == Buy ? Sell : Buy;
-          forceChangeOrderType = true;
-      }
+    if (
+      balanceHFT.baseAvailable.lt(new BN(randomAmount)) || 
+      balance.quoteAvailable.lt(new BN(randomAmount * price))) {
+        orderType = orderType == Buy ? Sell : Buy;
+        forceChangeOrderType = true;
+    }
   }
 
   if (orderTypeChangeIsNeeded(orderType, orderTypeStreak) && !forceChangeOrderType) {
-      orderType = orderType == Buy ? Sell : Buy;
-      randomAmount += 100;
+    orderType = orderType == Buy ? Sell : Buy;
+    randomAmount += 100;
   }
 
   const {response} = await market.placeOrder({
@@ -148,8 +144,6 @@ export async function makeMarket(params: MarketMakerParams) {
     tonic,
     tonicHFT,
     marketId,
-    baseName, 
-    quoteName,
     assetName,
     baseQuantity,
     quoteQuantity,
@@ -181,7 +175,7 @@ export async function makeMarket(params: MarketMakerParams) {
     const configOrders = getOrderBookFromConfig(config, indexPrice, baseQuantity, quoteQuantity);
 
     if (currentOrders.buy.length > 0) {
-      randomSleepTimeMs = await makeHFT(tonic, tonicHFT, market, marketHFT, baseName, quoteName, mandatoryHftIter, orderTypeStreak);
+      randomSleepTimeMs = await makeHFT(tonic, tonicHFT, market, marketHFT, mandatoryHftIter, orderTypeStreak);
     }
 
     if (isMakeMarketNeeded(currentOrders, configOrders, config.priceThreshold, config.quantityThreshold)) {
