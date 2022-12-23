@@ -1,6 +1,6 @@
 import {getExplorerBaseUrl} from "@tonic-foundation/config";
 import {FinalExecutionOutcome} from "near-api-js/lib/providers";
-import {Config, Order, OrderTypeStreak} from "./types";
+import {Config, Order, OrderTypeStreak, Balance} from "./types";
 import {QUANTITY_FACTOR, PRICE_FACTOR, PRICE_CONFIG_FIXED, Buy, Sell} from "./consts";
 import {OpenLimitOrder, Tonic} from "@tonic-foundation/tonic";
 import {getNearConfig} from "@tonic-foundation/config";
@@ -210,4 +210,25 @@ export function convertToDecimals(
       .mul(new BN(10).pow(new BN(decimal)))
       .toString()
   );
+}
+
+export function forceChangeOrderType(
+  orderType: number, 
+  balance: Balance, balanceHFT: Balance,
+  priceForOrderBN: BN, amountBN: BN): boolean {
+    if (orderType == Buy) {
+      if (balanceHFT.quoteAvailable.lt(priceForOrderBN) || balance.baseAvailable.lt(amountBN)) {
+        return true;
+      }
+    } else {
+      if (balanceHFT.baseAvailable.lt(amountBN) || balance.quoteAvailable.lt(priceForOrderBN)) {
+        return true;
+      }
+    }
+
+  return false;
+}
+
+export function reverseOrdertype(orderType: number) {
+  return orderType == Buy ? Sell : Buy;
 }

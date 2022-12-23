@@ -15,7 +15,9 @@ import {
   getOrderType,
   getGasUsage,
   sleep,
-  convertToDecimals
+  forceChangeOrderType,
+  reverseOrdertype,
+  convertToDecimals,
 } from "./util";
 
 
@@ -97,32 +99,14 @@ async function makeHFT(
     return randomSleepTimeMs;
   }
 
-  let forceChangeOrderType = false;
-  if (orderType == Buy) {
-    if (
-      balanceHFT.quoteAvailable.lt(priceForOrderBN) || 
-      balance.baseAvailable.lt(amountBN)) {
-        orderType = orderType == Buy ? Sell : Buy;
-        forceChangeOrderType = true;
-    }
-  } else {
-    if (
-      balanceHFT.baseAvailable.lt(amountBN) || 
-      balance.quoteAvailable.lt(priceForOrderBN)) {
-        orderType = orderType == Buy ? Sell : Buy;
-        forceChangeOrderType = true;
-    }
-  }
-
-  return 0;
-
-  if (orderTypeChangeIsNeeded(orderType, orderTypeStreak) && !forceChangeOrderType) {
-    orderType = orderType == Buy ? Sell : Buy;
+  let forcedChangeOrderType = forceChangeOrderType(orderType, balance, balanceHFT, priceForOrderBN, amountBN);
+  if (orderTypeChangeIsNeeded(orderType, orderTypeStreak) && !forcedChangeOrderType || forcedChangeOrderType) {
+    orderType = reverseOrdertype(orderType);
   }
 
   const {response} = await market.placeOrder({
     quantity: randomAmount, 
-    side: getOrderType(orderType == Buy ? Sell : Buy),
+    side: getOrderType(reverseOrdertype(orderType)),
     limitPrice: price,
     orderType: "Limit"
   });
