@@ -63,6 +63,6 @@ export const isMakeMarketNeeded = (
   return false;
 };
 
-export const notEnoughFunds = (balance: Balance, amount: number, price: number) => {
-  return balance.quoteAvailable.lt(new BN(amount * price)) && balance.baseAvailable.lt(new BN(amount));
+export const notEnoughFunds = (balance: Balance, priceForOrderBN: BN, amount: BN) => {
+  return balance.quoteAvailable.lt(priceForOrderBN) && balance.baseAvailable.lt(amount);
 }

@@ -200,3 +200,14 @@ export const changeIndexPrice = (price: number, newPrice: number) => {
 
   return price;
 }
+
+export function convertToDecimals(
+  value: string | number,
+  decimal: string | number
+): string {
+  return (
+    new BN(value)
+      .mul(new BN(10).pow(new BN(decimal)))
+      .toString()
+  );
+}

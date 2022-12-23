@@ -2,7 +2,7 @@ import { getOrderConfig, getPrice, getProgramConfig, getRandomArbitrary } from "
 import { Balance, MandatoryHFTIter, MarketMakerParams, OrderTypeStreak } from "./types";
 import { Tonic, Market } from "@tonic-foundation/tonic";
 import { isMakeMarketNeeded, notEnoughFunds } from "./checks";
-import { Buy, Sell } from "./consts"
+import { Buy, Sell, TOKEN_DECIMALS, PRICE_DECIMALS } from "./consts"
 import BN from "bn.js";
 import {
   orderTypeChangeIsNeeded,
@@ -15,6 +15,7 @@ import {
   getOrderType,
   getGasUsage,
   sleep,
+  convertToDecimals
 } from "./util";
 
 
@@ -82,12 +83,16 @@ async function makeHFT(
   const { bestAskPrice, bestBidPrice } = getBestPrice(await tonic.getOpenOrders(market.id))
   let price = calculateBestPrice(bestBidPrice, bestAskPrice);
 
+  const amountBN = new BN(convertToDecimals(randomAmount, TOKEN_DECIMALS));
+  const priceBN = new BN(convertToDecimals(price, PRICE_DECIMALS));
+  const priceForOrderBN = amountBN.mul(priceBN);
+
   const balance = new Balance(await tonic.getBalances());
   const balanceHFT = new Balance(await tonicHFT.getBalances());
 
   if (
-    notEnoughFunds(balance, randomAmount, price) && 
-    notEnoughFunds(balanceHFT, randomAmount, price)
+    notEnoughFunds(balance, priceForOrderBN, amountBN) && 
+    notEnoughFunds(balanceHFT, priceForOrderBN, amountBN)
     ) {
     return randomSleepTimeMs;
   }
@@ -95,23 +100,24 @@ async function makeHFT(
   let forceChangeOrderType = false;
   if (orderType == Buy) {
     if (
-      balanceHFT.quoteAvailable.lt(new BN(randomAmount * price)) || 
-      balance.baseAvailable.lt(new BN(randomAmount))) {
+      balanceHFT.quoteAvailable.lt(priceForOrderBN) || 
+      balance.baseAvailable.lt(amountBN)) {
         orderType = orderType == Buy ? Sell : Buy;
         forceChangeOrderType = true;
     }
   } else {
     if (
-      balanceHFT.baseAvailable.lt(new BN(randomAmount)) || 
-      balance.quoteAvailable.lt(new BN(randomAmount * price))) {
+      balanceHFT.baseAvailable.lt(amountBN) || 
+      balance.quoteAvailable.lt(priceForOrderBN)) {
         orderType = orderType == Buy ? Sell : Buy;
         forceChangeOrderType = true;
     }
   }
 
+  return 0;
+
   if (orderTypeChangeIsNeeded(orderType, orderTypeStreak) && !forceChangeOrderType) {
     orderType = orderType == Buy ? Sell : Buy;
-    randomAmount += 100;
   }
 
   const {response} = await market.placeOrder({
