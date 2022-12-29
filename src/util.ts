@@ -52,6 +52,10 @@ const relDiff = (a: any, b: any) => {
   return 100*((a-b)/((a+b)/2));
 }
 
+function round(value: number, precision: number) {
+  var factor = Math.pow(10, precision || 0);
+  return Math.round(value * factor) / factor;
+}
 
 export const getGasUsage = (o: FinalExecutionOutcome) => {
   const receiptGas = o.transaction_outcome.outcome.gas_burnt;
@@ -160,10 +164,11 @@ export const getBestPrice = (orders: OpenLimitOrder[]) => {
 export const calculateBestPrice = (bestBid: number, bestAsk: number) => {
   let randomDecimal = toFixedNoRound(getRandomDecimal(bestAsk, bestBid), PRICE_CONFIG_FIXED);
 
+  const extra = round(Math.pow(10, -PRICE_CONFIG_FIXED), PRICE_CONFIG_FIXED);
   if (randomDecimal == bestAsk) {
-    randomDecimal -= Math.pow(10, -PRICE_CONFIG_FIXED);
+    randomDecimal -= extra;
   } else if (randomDecimal == bestBid) {
-    randomDecimal += Math.pow(10, -PRICE_CONFIG_FIXED);
+    randomDecimal += extra;
   }
 
   return toFixedNoRound(randomDecimal, PRICE_CONFIG_FIXED);
